@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voltera &bull; Power Grid Operations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/voltera_logo.svg') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ cache_buster }}">
+</head>
+<body>
+
+    <!-- 1. Login Page: Split View (Photo on One Side, Minimal Login Window on One Side) -->
+    <div id="login-screen" class="login-wrapper split-login-mode">
+        <div class="split-login-container">
+            <!-- Left Side: Power Grid Control Photo -->
+            <div class="login-photo-side">
+                <img src="{{ url_for('static', filename='img/login_photo.jpg') }}?v={{ cache_buster }}" alt="Lucknow Power Grid Operations" class="login-side-img">
+            </div>
+
+            <!-- Right Side: Minimal Institutional Login Window -->
+            <div class="login-window-side">
+                <div class="minimal-login-card">
+                    <!-- Brand Lockup with Transparent Minimalist Vector Logo -->
+                    <div class="login-card-brand">
+                        <img src="{{ url_for('static', filename='img/voltera_logo.svg') }}?v={{ cache_buster }}" alt="Voltera Logo" class="new-login-logo">
+                        <div class="login-brand-meta">
+                            <h1 class="login-brand-title">Voltera</h1>
+                            <span class="login-brand-subtitle">Power Grid Operations</span>
+                        </div>
+                    </div>
+
+                    <!-- Immediate Inline Error Alert Box -->
+                    <div id="login-error-alert" class="login-alert-box hidden" role="alert"></div>
+
+                    <!-- Minimal Login Form: Only User Name & Password -->
+                    <form id="login-form" class="clean-form">
+                        <div class="form-field-group">
+                            <label for="login-email" class="field-label">User Name</label>
+                            <div class="field-input-box">
+                                <span class="field-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </span>
+                                <input type="text" id="login-email" placeholder="Username or Email" required autocomplete="username">
+                            </div>
+                        </div>
+
+                        <div class="form-field-group">
+                            <label for="login-password" class="field-label">Password</label>
+                            <div class="field-input-box">
+                                <span class="field-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </span>
+                                <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+                                <button type="button" class="btn-pwd-toggle" id="btn-toggle-pwd" title="Toggle password visibility">Show</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary-signin" id="btn-login-submit">
+                            <span>Sign In</span>
+                        </button>
+                    </form>
+
+                    <!-- Demo Accounts: Admin, Operator, Crew, Guest ONLY -->
+                    <div class="login-demo-group">
+                        <div class="demo-group-label">Quick Sign-In Access:</div>
+                        <div class="demo-pills-row">
+                            <button type="button" class="role-pill" onclick="setLogin('admin@lesa.up.gov.in','Admin@Lucknow2026', this)" title="Admin Demo">
+                                <span class="pill-dot dot-admin"></span>
+                                <span class="pill-title">Admin</span>
+                            </button>
+                            <button type="button" class="role-pill" onclick="setLogin('operator@lesa.up.gov.in','LucknowGrid@2026', this)" title="Operator Demo">
+                                <span class="pill-dot dot-operator"></span>
+                                <span class="pill-title">Operator</span>
+                            </button>
+                            <button type="button" class="role-pill" onclick="setLogin('crew','LucknowGrid@2026', this)" title="Field Crew Demo">
+                                <span class="pill-dot dot-crew"></span>
+                                <span class="pill-title">Crew</span>
+                            </button>
+                            <button type="button" class="role-pill" id="btn-guest-explore" title="Guest / Citizen Demo">
+                                <span class="pill-dot dot-citizen"></span>
+                                <span class="pill-title">Guest</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Login Screen Copyright Line with Integrated Version -->
+                    <div class="login-copyright-line">
+                        &copy; 2026 Voltera Power Grid Operations &bull; Version 1.0 &bull; MVVNL / UPPCL &bull; All Rights Reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Main App Workspace -->
+    <div id="app-workspace" class="app-shell hidden">
+        <!-- Top Navigation Header (Enlarged Solid Navy Navigation Bar) -->
+        <header class="app-header">
+            <div class="header-left">
+                <a href="#" class="brand-link" onclick="switchView('view-overview'); return false;" title="Voltera Home">
+                    <img src="{{ url_for('static', filename='img/voltera_logo.svg') }}?v={{ cache_buster }}" alt="Voltera Logo" class="brand-logo-nav">
+                    <div class="brand-text-group">
+                        <span class="brand-title">Voltera</span>
+                        <span class="brand-dept">Grid Operations</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="nav-scroller-wrap">
+                <button type="button" class="nav-slider-btn nav-slider-left" id="btn-nav-slide-left" onclick="slideNav(-220)" title="Slide Menu Left" aria-label="Slide Menu Left">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <nav class="nav-links" id="main-nav-links">
+                    <button class="nav-btn active" data-view="view-overview" id="nav-overview"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg></span><span class="nav-label">Overview</span></button>
+                    <button class="nav-btn" data-view="view-incidents" id="nav-incidents"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span><span class="nav-label">Outages</span> <span class="nav-badge badge-red" id="badge-incidents">0</span></button>
+                    <button class="nav-btn" data-view="view-substations" id="nav-substations"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M7 20V9l5-5 5 5v11M10 12h4v8h-4z"/></svg></span><span class="nav-label">Substations</span></button>
+                    <button class="nav-btn" data-view="view-fleet" id="nav-fleet"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></span><span class="nav-label">Field Crews</span> <span class="nav-badge badge-green" id="badge-fleet">0</span></button>
+                    <button class="nav-btn" data-view="view-facilities" id="nav-facilities"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h6M12 7v6"/></svg></span><span class="nav-label">Vital Sites</span></button>
+                    <button class="nav-btn" data-view="view-citizen" id="nav-citizen"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span><span class="nav-label">Report Outage</span></button>
+                    <button class="nav-btn crew-only hidden" data-view="view-crew-terminal" id="nav-crew-terminal"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 19 21 12 17 5 21 12 2"></polygon></svg></span><span class="nav-label">My Dispatch &amp; Route</span> <span class="nav-badge badge-red" id="badge-crew-dispatch">1</span></button>
+                    <button class="nav-btn admin-only hidden" data-view="view-users" id="nav-users"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span><span class="nav-label">User Accounts</span></button>
+                </nav>
+                <button type="button" class="nav-slider-btn nav-slider-right" id="btn-nav-slide-right" onclick="slideNav(220)" title="Slide Menu Right" aria-label="Slide Menu Right">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="header-right">
+                <div class="global-search-box">
+                    <input type="text" id="global-search" placeholder="Search grid (press /)...">
+                    <kbd class="kbd-hint">/</kbd>
+                </div>
+
+                <!-- Cross-Device Alert / Notification Center -->
+                <div class="notification-wrapper">
+                    <button type="button" class="notification-trigger-btn" id="btn-notification-trigger" onclick="toggleNotificationCenter(event)" aria-haspopup="true" aria-expanded="false" title="Cross-Device Alerts &amp; Notifications">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notification-badge" id="header-alert-count">0</span>
+                    </button>
+                    <!-- Notification Center Dropdown -->
+                    <div id="notification-center-menu" class="notification-dropdown-menu hidden" role="menu">
+                        <div class="notif-header">
+                            <div class="notif-header-title-row">
+                                <span class="notif-bell-icon">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                    </svg>
+                                </span>
+                                <span class="notif-title">Grid Alerts &amp; Notifications</span>
+                            </div>
+                            <span class="notif-live-tag" id="notif-sync-badge">LIVE SYNC</span>
+                        </div>
+                        <div class="notif-sub-bar">
+                            <span id="notif-summary-text">Active notifications</span>
+                            <button type="button" class="btn-notif-action" onclick="refreshNotifications(event)">Refresh</button>
+                        </div>
+                        <div id="notif-items-list" class="notif-items-list">
+                            <div class="notif-empty">Checking real-time alerts...</div>
+                        </div>
+                        <div class="notif-footer" id="notif-footer-action-wrap">
+                            <button type="button" class="btn btn-secondary btn-xs btn-full" onclick="closeNotificationCenter();">Close</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Profile Trigger & Dropdown Menu -->
+                <div class="user-profile-wrapper">
+                    <button type="button" class="user-profile-trigger" id="user-profile-btn" aria-haspopup="true" aria-expanded="false" title="Account Menu">
+                        <div class="user-avatar-circle" id="user-avatar">AD</div>
+                        <div class="user-info-text">
+                            <span class="user-name" id="user-display-name">Administrator</span>
+                            <span class="user-role" id="user-role-badge">Admin</span>
+                        </div>
+                        <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <!-- Popup Menu -->
+                    <div id="user-profile-menu" class="user-dropdown-menu hidden" role="menu">
+                        <div class="dropdown-user-header">
+                            <div class="dropdown-avatar" id="dropdown-avatar">AD</div>
+                            <div class="dropdown-user-details">
+                                <strong id="dropdown-user-name">Administrator</strong>
+                                <span class="dropdown-user-email" id="dropdown-user-email">admin@lesa.up.gov.in</span>
+                                <div class="dropdown-role-meta">
+                                    <span class="tag tag-normal" id="dropdown-user-role">Administrator</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <div class="dropdown-section">
+                            <span class="dropdown-section-title">Controls &amp; Display</span>
+                            
+                            <!-- Theme Toggle Row -->
+                            <div class="dropdown-pref-row">
+                                <span class="dropdown-pref-label">Appearance</span>
+                                <button type="button" class="btn btn-secondary btn-sm theme-toggle-btn" id="btn-toggle-theme" title="Toggle Light/Dark Theme">
+                                    <span class="theme-toggle-label" id="theme-state-text">Theme: Dark</span>
+                                </button>
+                            </div>
+
+                            <!-- Sound Toggle Row -->
+                            <div class="dropdown-pref-row">
+                                <span class="dropdown-pref-label">Sound Effects</span>
+                                <button type="button" class="btn btn-secondary btn-sm audio-toggle-btn" id="btn-toggle-audio" title="Toggle audio feedback">
+                                    <span class="audio-toggle-label" id="audio-state-text">Audio: On</span>
+                                </button>
+                            </div>
+
+                            <!-- Map Size Row -->
+                            <div class="dropdown-pref-row">
+                                <span class="dropdown-pref-label">Map Size</span>
+                                <button type="button" class="btn btn-secondary btn-sm" id="btn-menu-map-size" title="Toggle Map Height">
+                                    <span id="menu-map-size-text">Size: Normal</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <div class="dropdown-section" id="dropdown-nav-shortcuts">
+                            <span class="dropdown-section-title">Navigation Shortcuts</span>
+                            <button type="button" class="dropdown-item" data-target-view="view-overview" onclick="switchView('view-overview'); closeProfileMenu();">Overview Dashboard</button>
+                            <button type="button" class="dropdown-item" data-target-view="view-fleet" onclick="switchView('view-fleet'); closeProfileMenu();">Field Fleet Roster</button>
+                            <button type="button" class="dropdown-item" data-target-view="view-crew-terminal" onclick="switchView('view-crew-terminal'); closeProfileMenu();">Crew Dispatch &amp; Route Terminal</button>
+                            <button type="button" class="dropdown-item" data-target-view="view-citizen" onclick="switchView('view-citizen'); closeProfileMenu();">Citizen Outage Desk</button>
+                            <button type="button" class="dropdown-item admin-only hidden" id="dropdown-item-users" data-target-view="view-users" onclick="switchView('view-users'); closeProfileMenu();">User Accounts</button>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <div class="dropdown-footer">
+                            <button type="button" class="btn btn-secondary btn-sm btn-full" id="btn-logout">Sign Out</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Cross-Device Persistent Dispatch Alert Banner (Account-Based) -->
+        <div id="crew-dispatch-top-alert" class="crew-top-alert-banner hidden">
+            <div class="top-alert-content">
+                <span class="top-alert-pulse-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </span>
+                <div class="top-alert-text">
+                    <strong id="top-alert-headline">ACTIVE DISPATCH ORDER</strong>
+                    <span id="top-alert-detail">Assigned to Unit &bull; Route Navigation Available</span>
+                </div>
+            </div>
+            <div class="top-alert-actions">
+                <button type="button" class="btn btn-primary btn-sm" onclick="switchView('view-crew-terminal');">View Route &amp; Dispatch Order</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-quick-status-site" onclick="quickUpdateStatus('ON_SITE');">Mark Arrived</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="app-main">
+
+            <!-- 1. Overview Dashboard (Supports Full Width, Dock Left, or Dock Right) -->
+            <section id="view-overview" class="view-panel active">
+                <!-- Role Scope & Access Level Notice Banner (Dynamic per Role: Admin 100%, Operator 85%, Crew 50%, Citizen 25%) -->
+                <div id="role-context-banner-container" class="role-scope-banner-wrap"></div>
+
+                <!-- Operations Center Visual Banner (Substation & Control Room View) -->
+                <div class="home-operations-hero">
+                    <img src="{{ url_for('static', filename='img/home_hero.jpg') }}?v={{ cache_buster }}" alt="Voltera Grid Operations" class="home-hero-img">
+                </div>
+
+                <!-- Quick Operations Bar -->
+                <div class="quick-ops-bar">
+                    <div class="quick-ops-search">
+                        <input type="text" id="quick-track-input" placeholder="Quick Search: Outage Docket or Substation..." autocomplete="off">
+                        <button type="button" class="btn btn-primary btn-sm" id="btn-quick-track">Track</button>
+                        <span class="quick-ops-kbd"><kbd>/</kbd></span>
+                    </div>
+                    <div class="quick-ops-live-tags">
+                        <span class="pill-chip chip-blue" title="Monitored Feeders"><span class="chip-dot"></span> 18 Substations</span>
+                        <span class="pill-chip chip-amber" id="quick-chip-faults" title="Active Line Incidents"><span class="chip-dot"></span> <span id="quick-fault-count">0</span> Active Faults</span>
+                    </div>
+                </div>
+
+                <!-- Inline Quick Outage Tracker Result (Appears when tracking from Quick Search) -->
+                <div id="quick-tracker-result" class="quick-tracker-card hidden">
+                    <div class="quick-tracker-header">
+                        <div class="quick-tracker-title">
+                            <span class="badge-rail">OUTAGE DOCKET</span>
+                            <strong class="quick-token-code" id="quick-res-token">--</strong>
+                            <span class="tag tag-normal" id="quick-res-status">--</span>
+                        </div>
+                        <button type="button" class="btn-close-tracker" id="btn-close-quick-tracker" title="Dismiss">&times;</button>
+                    </div>
+
+                    <!-- 4-Stage Railway Journey Stepper -->
+                    <div class="rail-journey-stepper" id="quick-rail-journey-stepper">
+                        <div class="stepper-step step-done" id="quick-step-logged">
+                            <div class="step-marker">1</div>
+                            <div class="step-label">Docket Logged</div>
+                            <div class="step-sub" id="quick-step-time-logged">Received</div>
+                        </div>
+                        <div class="stepper-line" id="quick-line-1"></div>
+                        <div class="stepper-step" id="quick-step-verified">
+                            <div class="step-marker">2</div>
+                            <div class="step-label">Docket Verified</div>
+                            <div class="step-sub" id="quick-step-sub-verified">Feeder Mapped</div>
+                        </div>
+                        <div class="stepper-line" id="quick-line-2"></div>
+                        <div class="stepper-step" id="quick-step-dispatched">
+                            <div class="step-marker">3</div>
+                            <div class="step-label">Gang En Route</div>
+                            <div class="step-sub" id="quick-step-sub-dispatched">Repair Crew</div>
+                        </div>
+                        <div class="stepper-line" id="quick-line-3"></div>
+                        <div class="stepper-step" id="quick-step-restored">
+                            <div class="step-marker">4</div>
+                            <div class="step-label">Power Restored</div>
+                            <div class="step-sub" id="quick-step-sub-restored">Grid Online</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-tracker-meta">
+                        <div class="meta-cell">
+                            <span class="meta-label">Locality / Sector:</span>
+                            <strong class="meta-val" id="quick-res-locality">--</strong>
+                        </div>
+                        <div class="meta-cell">
+                            <span class="meta-label">Est. Restoration:</span>
+                            <strong class="meta-val" id="quick-res-eta">--</strong>
+                        </div>
+                        <div class="meta-cell">
+                            <span class="meta-label">Feed Circle:</span>
+                            <span class="meta-val" id="quick-res-circle">Central Lucknow (Voltera Grid)</span>
+                        </div>
+                        <div class="meta-cell actions">
+                            <button type="button" class="btn btn-secondary btn-xs" onclick="switchView('view-citizen');">Open in Docket Portal &rarr;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 Operational Metrics with Railway.com High-Density Design -->
+                <div class="stats-row">
+                    <div class="stat-card stat-substations">
+                        <div class="stat-card-top">
+                            <span class="stat-micro-tag">33/11kV SUBSTATIONS</span>
+                            <span class="info-tip" data-tooltip="Total 33/11kV power distribution substations monitored in Lucknow">i</span>
+                        </div>
+                        <strong class="stat-value" id="stat-substations">18</strong>
+                        <div class="stat-pill"><span class="stat-pill-dot green"></span> 100% ONLINE</div>
+                    </div>
+                    <div class="stat-card stat-incidents">
+                        <div class="stat-card-top">
+                            <span class="stat-micro-tag">ACTIVE FAULTS</span>
+                            <span class="info-tip" data-tooltip="Open feeder trips and transformer overload alerts requiring attention">i</span>
+                        </div>
+                        <strong class="stat-value" id="stat-incidents">0</strong>
+                        <div class="stat-pill" id="stat-incidents-pill"><span class="stat-pill-dot green"></span> ZERO FAULTS</div>
+                    </div>
+                    <div class="stat-card stat-crews">
+                        <div class="stat-card-top">
+                            <span class="stat-micro-tag">LINE GANGS &amp; FLEET</span>
+                            <span class="info-tip" data-tooltip="Available linesmen squads and emergency repair vans currently on duty">i</span>
+                        </div>
+                        <strong class="stat-value" id="stat-crews">30</strong>
+                        <div class="stat-pill"><span class="stat-pill-dot blue"></span> 5 SQUADS / ZONE</div>
+                    </div>
+                    <div class="stat-card stat-facilities">
+                        <div class="stat-card-top">
+                            <span class="stat-micro-tag">VITAL SERVICES</span>
+                            <span class="info-tip" data-tooltip="Priority infrastructure including hospitals, water pumping stations, and metro rail">i</span>
+                        </div>
+                        <strong class="stat-value" id="stat-facilities">9</strong>
+                        <div class="stat-pill"><span class="stat-pill-dot green"></span> ALL SECURE</div>
+                    </div>
+                </div>
+
+                <!-- Region Filter & Map Controls Toolbar -->
+                <div class="panel-toolbar">
+                    <div class="filter-group" id="region-filter-group">
+                        <button class="pill-btn active" data-region="ALL">All Regions</button>
+                    </div>
+
+                    <div class="toolbar-actions">
+                        <!-- Map Docking Layout: Full / Left / Right -->
+                        <div class="segmented-control" id="map-layout-selector" title="Map Position on Screen">
+                            <button type="button" class="seg-btn active" data-layout="full" title="Full Width Map">Full</button>
+                            <button type="button" class="seg-btn" data-layout="left" title="Dock Map on Left Side">Dock Left</button>
+                            <button type="button" class="seg-btn" data-layout="right" title="Dock Map on Right Side">Dock Right</button>
+                        </div>
+
+                        <!-- Map Height Toggle & Data Refresh -->
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-map-size" title="Toggle Map Height">Compact</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-data" title="Refresh Live Data">Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Overview Operations Deck (Flexible Layout) -->
+                <div class="overview-deck layout-full" id="overview-deck">
+                    <!-- Map Slot -->
+                    <div class="deck-map-slot" id="deck-map-slot">
+                        <div class="map-container" id="map-container">
+                            <div id="lucknow-map">
+                                <canvas id="gis-canvas"></canvas>
+                                <!-- Map Overlay Controls -->
+                                <div class="map-controls">
+                                    <button type="button" class="map-btn" id="map-zoom-in" title="Zoom in">+</button>
+                                    <button type="button" class="map-btn" id="map-zoom-out" title="Zoom out">&minus;</button>
+                                    <button type="button" class="map-btn map-btn-text" id="map-reset" title="Reset view">Center</button>
+                                </div>
+                                <!-- Solid Map Legend with Info Tip -->
+                                <div class="map-legend">
+                                    <div class="legend-item"><span class="legend-dot normal"></span> Normal</div>
+                                    <div class="legend-item"><span class="legend-dot warning"></span> Warning</div>
+                                    <div class="legend-item"><span class="legend-dot critical"></span> Critical</div>
+                                    <div class="legend-item"><span class="legend-line"></span> Line</div>
+                                    <span class="info-tip" data-tooltip="Green: &lt;75% Load | Amber: 75-90% Load | Red: &gt;90% or Faulted">i</span>
+                                </div>
+                                <!-- Hover / Click Card -->
+                                <div id="map-tooltip" class="map-tooltip hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Feeds Slot (Telemetry & Incidents) -->
+                    <div class="deck-feeds-slot" id="deck-feeds-slot">
+                        <div class="two-col-flow">
+                            <!-- Left: Substation Telemetry (Max 8) -->
+                            <div class="card">
+                                <div class="card-head">
+                                    <h3>Substation Telemetry <span class="info-tip" data-tooltip="Live load percentage and operating bus voltage for central distribution substations">i</span></h3>
+                                    <button class="btn-text" onclick="switchView('view-substations')">View all &rarr;</button>
+                                </div>
+                                <div class="table-card borderless">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Substation</th>
+                                                <th>Zone</th>
+                                                <th>Load</th>
+                                                <th>Voltage</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="overview-tfs-tbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Right: Active Faults (Max 6) -->
+                            <div class="card">
+                                <div class="card-head">
+                                    <h3>Active Faults <span class="info-tip" data-tooltip="Open network alerts requiring operator response or field crew dispatch">i</span></h3>
+                                    <button class="btn-text" onclick="switchView('view-incidents')">View all &rarr;</button>
+                                </div>
+                                <div id="overview-incidents-list" class="simple-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Incidents Table -->
+            <section id="view-incidents" class="view-panel">
+                <div class="panel-head">
+                    <h2>Incident Management <span class="info-tip" data-tooltip="Prioritized network faults with direct dispatch authorization for control room operators">i</span></h2>
+                    <div class="filter-group" id="incidents-status-filter">
+                        <button class="pill-btn active" data-status="ACTIVE">Active</button>
+                        <button class="pill-btn" data-status="ALL">All Records</button>
+                    </div>
+                </div>
+                <div class="table-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Incident Code</th>
+                                <th>Substation</th>
+                                <th>Severity</th>
+                                <th>Root Cause</th>
+                                <th>Status</th>
+                                <th>Assigned Crew</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incidents-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 3. Substations Grid -->
+            <section id="view-substations" class="view-panel">
+                <div class="panel-head">
+                    <h2>Substations Directory <span class="info-tip" data-tooltip="33/11kV and 132/33kV distribution transformers across central Lucknow operating divisions">i</span></h2>
+                </div>
+                <div class="grid-cards" id="substations-grid"></div>
+            </section>
+
+            <!-- 4. Fleet & Work Orders -->
+            <section id="view-fleet" class="view-panel">
+                <div class="panel-head">
+                    <h2>Field Crews <span class="info-tip" data-tooltip="Emergency repair crews, vehicle call-signs, and area substation assignments">i</span></h2>
+                </div>
+                <div class="table-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Crew Team Name</th>
+                                <th>Crew Lead &amp; Designation</th>
+                                <th>Contact</th>
+                                <th>Base Substation</th>
+                                <th>Specialization</th>
+                                <th>Workload</th>
+                                <th>Status</th>
+                                <th>Action / Portal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fleet-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="two-col" style="margin-top: 20px;">
+                    <div class="card">
+                        <div class="card-head">
+                            <h3>Active Work Orders <span class="info-tip" data-tooltip="Field work orders generated from dispatched fault tickets">i</span></h3>
+                        </div>
+                        <div id="work-orders-list" class="simple-list"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <h3>Team Communications <span class="info-tip" data-tooltip="Direct dispatch log and field coordinator broadcasts">i</span></h3>
+                        </div>
+                        <div id="messages-list" class="messages-list"></div>
+                        <form id="msg-form" class="msg-input-row">
+                            <input type="text" id="msg-input" placeholder="Broadcast message to field teams..." required>
+                            <button type="submit" class="btn btn-primary btn-sm">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Field Crew Operations Terminal & Route Navigation -->
+            <section id="view-crew-terminal" class="view-panel">
+                <div class="panel-head crew-terminal-header">
+                    <div class="crew-head-left">
+                        <div class="crew-badge-row">
+                            <span class="badge-terminal">FIELD CREW OPERATIONS TERMINAL</span>
+                            <span class="tag tag-warning" id="terminal-crew-status">DISPATCHED</span>
+                        </div>
+                        <h2 id="terminal-crew-name">LESA-Amausi-1 (SGPGI Hospital Line)</h2>
+                        <div class="crew-meta-line" id="terminal-crew-meta">
+                            Lead: Om Prakash &bull; Base: 132kV SGPGI Substation &bull; GPS: 26.7480°N, 80.9350°E
+                        </div>
+                    </div>
+                    <div class="crew-head-right">
+                        <div class="crew-account-pill">
+                            <span class="acc-indicator-dot"></span>
+                            <span id="terminal-account-label">Live Crew Account</span>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="reloadCrewDispatchDetails(true)">Refresh Telemetry</button>
+                    </div>
+                </div>
+
+                <!-- Two-Column Grid: Left = Dispatch Directive & Incident Comms, Right = Route & Turn-by-Turn Guidance -->
+                <div class="crew-terminal-grid">
+                    <!-- Left Column: Official Dispatch Directive & Comms -->
+                    <div class="crew-col-left">
+                        <div class="card terminal-directive-card">
+                            <div class="card-head">
+                                <h3>Official Dispatch Order Directive <span class="info-tip" data-tooltip="Formal incident order transmitted by central control room to this crew">i</span></h3>
+                                <span class="tag tag-critical" id="terminal-inc-ref">INC-LKO-SG01-0941</span>
+                            </div>
+
+                            <div class="dispatch-directive-box">
+                                <div class="directive-box-header">
+                                    <span class="directive-source">CENTRAL DISPATCH AUTHORITY &bull; SOP-LESA-2026</span>
+                                    <span class="directive-time" id="terminal-disp-time">Just now</span>
+                                </div>
+                                <pre id="terminal-disp-message" class="directive-text-body">Loading official dispatch directive...</pre>
+                                <div class="directive-pills-row">
+                                    <span class="pill-channel whatsapp-channel">WhatsApp Directive Sent</span>
+                                    <span class="pill-channel sms-channel">SMS Outage Alert Broadcast</span>
+                                    <span class="pill-channel scada-channel">SCADA Telemetry Linked</span>
+                                </div>
+                            </div>
+
+                            <div class="terminal-meta-grid">
+                                <div class="t-meta-item">
+                                    <span class="t-meta-label">Target Substation</span>
+                                    <strong class="t-meta-value" id="terminal-target-sub">132kV SGPGI Substation</strong>
+                                </div>
+                                <div class="t-meta-item">
+                                    <span class="t-meta-label">Coordinates</span>
+                                    <strong class="t-meta-value font-mono" id="terminal-target-coords">26.7450°N, 80.9380°E</strong>
+                                </div>
+                                <div class="t-meta-item">
+                                    <span class="t-meta-label">Root Cause</span>
+                                    <strong class="t-meta-value" id="terminal-target-cause">Severe Thermal Overload</strong>
+                                </div>
+                                <div class="t-meta-item">
+                                    <span class="t-meta-label">Severity Score</span>
+                                    <strong class="t-meta-value score-crit" id="terminal-target-sev">94.2 / 100</strong>
+                                </div>
+                            </div>
+
+                            <div class="terminal-actions-bar">
+                                <div class="action-btn-group">
+                                    <button type="button" class="btn btn-secondary" id="btn-crew-enroute" onclick="updateCrewIncidentStatus('EN_ROUTE')">Mark En Route</button>
+                                    <button type="button" class="btn btn-secondary" id="btn-crew-onsite" onclick="updateCrewIncidentStatus('ON_SITE')">Mark On Site</button>
+                                    <button type="button" class="btn btn-primary" id="btn-crew-resolve" onclick="updateCrewIncidentStatus('RESOLVED')">Fault Resolved / Restored</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Direct Comms with Control Room -->
+                        <div class="card" style="margin-top: 20px;">
+                            <div class="card-head">
+                                <h3>Direct Control Room Dispatch Feed</h3>
+                            </div>
+                            <div id="crew-terminal-messages" class="messages-list" style="max-height: 220px;"></div>
+                            <form id="crew-msg-form" class="msg-input-row" onsubmit="sendCrewMessage(event)">
+                                <input type="text" id="crew-msg-input" placeholder="Transmit field status to Grid Control..." required>
+                                <button type="submit" class="btn btn-primary btn-sm">Transmit</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Interactive Route Navigation & Turn-by-Turn Guidance -->
+                    <div class="crew-col-right">
+                        <div class="card terminal-route-card">
+                            <div class="card-head">
+                                <h3>Tactical Route Navigation <span class="info-tip" data-tooltip="GPS route path from current crew location to target fault substation">i</span></h3>
+                                <span class="badge-rail" id="terminal-route-corridor">Express Corridor</span>
+                            </div>
+
+                            <!-- Route Visual Canvas Preview -->
+                            <div class="route-map-wrapper">
+                                <canvas id="crew-route-canvas" class="crew-route-canvas" width="600" height="280"></canvas>
+                                <div class="route-canvas-hud">
+                                    <div class="hud-stat">
+                                        <span class="hud-lbl">DISTANCE</span>
+                                        <strong class="hud-val" id="hud-route-dist">1.4 km</strong>
+                                    </div>
+                                    <div class="hud-stat">
+                                        <span class="hud-lbl">EST. TRAVEL TIME</span>
+                                        <strong class="hud-val" id="hud-route-eta">10 mins</strong>
+                                    </div>
+                                    <div class="hud-stat">
+                                        <span class="hud-lbl">TRANSIT SPEED</span>
+                                        <strong class="hud-val">25 km/h</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Simulation Action Button -->
+                            <div class="route-sim-controls">
+                                <button type="button" class="btn btn-secondary btn-sm" id="btn-sim-route" onclick="simulateVehicleTransit()">
+                                    Simulate Vehicle GPS Movement Along Route
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="centerMapOnIncidentRoute()">
+                                    Focus on City Map
+                                </button>
+                            </div>
+
+                            <!-- Turn-by-Turn Guidance Steps -->
+                            <div class="turn-steps-container">
+                                <div class="turn-steps-title">Turn-by-Turn Navigation Guidance:</div>
+                                <div id="terminal-turn-steps" class="turn-steps-list">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Facilities -->
+            <section id="view-facilities" class="view-panel">
+                <div class="panel-head">
+                    <h2>Vital Infrastructure <span class="info-tip" data-tooltip="Critical continuous-power consumers including hospitals, pumping stations, and transit hubs">i</span></h2>
+                </div>
+                <div class="grid-cards" id="facilities-grid"></div>
+            </section>
+
+            <!-- 6. Citizen Report & Track -->
+            <section id="view-citizen" class="view-panel">
+                <div class="panel-head">
+                    <h2>Public Outage Desk <span class="info-tip" data-tooltip="Report a localized outage or track ongoing restoration using a token">i</span></h2>
+                </div>
+                <div class="two-col">
+                    <div class="card">
+                        <div class="card-head">
+                            <h3>Report Power Outage</h3>
+                        </div>
+                        <form id="citizen-form" class="clean-form">
+                            <div class="input-group">
+                                <label for="cit-zone">Locality</label>
+                                <select id="cit-zone">
+                                    <option value="Singar Nagar">Singar Nagar (Alambagh)</option>
+                                    <option value="Charbagh">Charbagh Junction</option>
+                                    <option value="Krishna Nagar">Krishna Nagar</option>
+                                    <option value="Hazratganj">Hazratganj Central</option>
+                                    <option value="Martinpurwa">Martinpurwa</option>
+                                    <option value="Aishbagh">Aishbagh</option>
+                                    <option value="Vibhuti Khand" selected>Vibhuti Khand (Gomti Nagar)</option>
+                                    <option value="Patrakarpuram">Patrakarpuram</option>
+                                    <option value="Indira Nagar">Indira Nagar</option>
+                                    <option value="Kursi Road">Kursi Road (Aliganj)</option>
+                                    <option value="Jankipuram">Jankipuram</option>
+                                    <option value="Mahanagar">Mahanagar</option>
+                                    <option value="Chowk">Chowk / Neebu Park</option>
+                                    <option value="Thakurganj">Thakurganj</option>
+                                    <option value="Rajajipuram">Rajajipuram</option>
+                                    <option value="Amausi">Amausi Airport Zone</option>
+                                    <option value="Rae Bareli Road">Rae Bareli Road (SGPGI)</option>
+                                    <option value="Chinhat">Chinhat Industrial</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="cit-phone">Contact Number</label>
+                                <input type="tel" id="cit-phone" placeholder="+91 98765 43210" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="cit-desc">Description</label>
+                                <textarea id="cit-desc" rows="3" placeholder="Describe the power issue..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full">Submit Report</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <h3>Track Status</h3>
+                        </div>
+                        <div class="track-row">
+                            <input type="text" id="track-id-input" placeholder="Tracking token (e.g. LKO-OUT-9482)">
+                            <button type="button" class="btn btn-primary" id="btn-search-ticket">Track</button>
+                        </div>
+                        <div id="ticket-result" class="ticket-result hidden">
+                            <div class="ticket-row">
+                                <span class="badge-rail">OUTAGE DOCKET</span>
+                                <span class="ticket-token" id="res-ticket-code">--</span>
+                                <span class="tag tag-normal" id="res-ticket-status">--</span>
+                            </div>
+
+                            <!-- 4-Stage Railway Journey Stepper -->
+                            <div class="rail-journey-stepper" id="cit-rail-journey-stepper">
+                                <div class="stepper-step step-done" id="cit-step-logged">
+                                    <div class="step-marker">1</div>
+                                    <div class="step-label">Docket Logged</div>
+                                    <div class="step-sub" id="cit-step-time-logged">Received</div>
+                                </div>
+                                <div class="stepper-line" id="cit-line-1"></div>
+                                <div class="stepper-step" id="cit-step-verified">
+                                    <div class="step-marker">2</div>
+                                    <div class="step-label">Docket Verified</div>
+                                    <div class="step-sub" id="cit-step-sub-verified">Feeder Mapped</div>
+                                </div>
+                                <div class="stepper-line" id="cit-line-2"></div>
+                                <div class="stepper-step" id="cit-step-dispatched">
+                                    <div class="step-marker">3</div>
+                                    <div class="step-label">Gang En Route</div>
+                                    <div class="step-sub" id="cit-step-sub-dispatched">Repair Crew</div>
+                                </div>
+                                <div class="stepper-line" id="cit-line-3"></div>
+                                <div class="stepper-step" id="cit-step-restored">
+                                    <div class="step-marker">4</div>
+                                    <div class="step-label">Power Restored</div>
+                                    <div class="step-sub" id="cit-step-sub-restored">Grid Online</div>
+                                </div>
+                            </div>
+
+                            <div class="ticket-details-grid">
+                                <div class="ticket-item">
+                                    <span>Locality:</span>
+                                    <strong id="res-ticket-loc">--</strong>
+                                </div>
+                                <div class="ticket-item">
+                                    <span>Est. Restoration:</span>
+                                    <strong id="res-ticket-eta">--</strong>
+                                </div>
+                                <div class="ticket-item">
+                                    <span>Feeder Circle:</span>
+                                    <strong id="res-ticket-zone">Lucknow Central</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Users (Admin Only) -->
+            <section id="view-users" class="view-panel">
+                <div class="panel-head">
+                    <h2>User Accounts <span class="info-tip" data-tooltip="System access credentials and role-based permissions management">i</span></h2>
+                </div>
+                <div class="two-col">
+                    <div class="card">
+                        <div class="card-head">
+                            <h3>Create Account</h3>
+                        </div>
+                        <form id="create-user-form" class="clean-form">
+                            <div class="input-group">
+                                <label for="new-name">Full Name</label>
+                                <input type="text" id="new-name" placeholder="Name" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="new-email">Email</label>
+                                <input type="email" id="new-email" placeholder="name@domain.com" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="new-password">Password</label>
+                                <input type="password" id="new-password" placeholder="Password" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="new-role">Role</label>
+                                <select id="new-role">
+                                    <option value="OPERATOR">Operator</option>
+                                    <option value="CREW">Crew</option>
+                                    <option value="COORDINATOR">Coordinator</option>
+                                    <option value="INSPECTOR">Inspector</option>
+                                    <option value="CONSUMER">Citizen</option>
+                                    <option value="ADMIN">Admin</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="new-zone">Zone</label>
+                                <input type="text" id="new-zone" value="Lucknow">
+                            </div>
+                            <div class="input-group">
+                                <label for="new-phone">Phone</label>
+                                <input type="tel" id="new-phone" placeholder="+91 98765 43210">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full">Create User</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <h3>Existing Users</h3>
+                        </div>
+                        <div class="table-card borderless">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Bottom Most Global Copyright Line & Compliance Footer with Integrated Version -->
+        <footer class="app-global-footer">
+            <div class="footer-container">
+                <div class="footer-left">
+                    <span class="copyright-mark">&copy; 2026 Voltera Power Grid Operations</span>
+                    <span class="footer-sep">&bull;</span>
+                    <span class="footer-version-tag">Version 1.0</span>
+                    <span class="footer-sep">&bull;</span>
+                    <span class="footer-org">Madhyanchal Vidyut Vitaran Nigam Ltd. (MVVNL) / UPPCL</span>
+                    <span class="footer-sep">&bull;</span>
+                    <span class="footer-rights">All Rights Reserved.</span>
+                </div>
+                <div class="footer-right">
+                    <span class="footer-compliance">Lucknow SCADA Central Electricity Dispatch &bull; Continuous 24/7 Monitoring Compliance</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Dispatch Modal -->
+    <div id="dispatch-modal" class="modal-backdrop hidden">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3>Dispatch Crew <span class="info-tip" data-tooltip="Select an available squad stationed at an adjacent power house">i</span></h3>
+                <button type="button" class="btn-close" id="btn-close-dispatch">&times;</button>
+            </div>
+            <div id="modal-crew-options" class="modal-list"></div>
+        </div>
+    </div>
+
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-wrapper"></div>
+
+    <!-- App JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}?v={{ cache_buster }}"></script>
+</body>
+</html>
