@@ -13,7 +13,7 @@ def find_available_port(preferred_port=5000):
         return int(os.environ["PORT"])
 
     candidate_ports = [preferred_port, 5001, 5050, 8080, 8000]
-    host = os.environ.get("HOST", "127.0.0.1")
+    host = os.environ.get("HOST", "0.0.0.0")
     for p in candidate_ports:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
@@ -40,12 +40,12 @@ if __name__ == "__main__":
 
     preferred = int(os.environ.get("PORT", 5000))
     port = find_available_port(preferred)
-    host = os.environ.get("HOST", "127.0.0.1")
+    host = os.environ.get("HOST", "0.0.0.0")
 
     print("\n=========================================================================")
     print("Voltera • Power Grid Operations & Outage Management System")
     print("State Distribution & Transmission Network")
-    print(f"Operational Control Server: http://localhost:{port}")
+    print(f"Operational Control Server: http://localhost:{port} (Network: http://0.0.0.0:{port})")
     if port != preferred:
         print(f"Notice: Port {preferred} occupied; assigned to port {port}.")
     print("=========================================================================\n")

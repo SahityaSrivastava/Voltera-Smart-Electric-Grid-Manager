@@ -130,16 +130,17 @@ def create_app(config_class=Config):
                 current_host.split(":")[0],
                 "localhost",
                 "127.0.0.1",
+                "0.0.0.0",
             }
             if origin:
                 origin_host = origin.split("://")[-1].split("/")[0].lower()
                 origin_hostname = origin_host.split(":")[0]
-                if origin_host != current_host and origin_hostname not in ("localhost", "127.0.0.1"):
+                if origin_host != current_host and origin_hostname not in ("localhost", "127.0.0.1", "0.0.0.0"):
                     return {"success": False, "error": "Cross-site request blocked", "code": "CSRF_DETECTED"}, 403
             elif referer:
                 ref_host = referer.split("://")[-1].split("/")[0].lower()
                 ref_hostname = ref_host.split(":")[0]
-                if ref_host != current_host and ref_hostname not in ("localhost", "127.0.0.1"):
+                if ref_host != current_host and ref_hostname not in ("localhost", "127.0.0.1", "0.0.0.0"):
                     return {"success": False, "error": "Cross-site request blocked", "code": "CSRF_DETECTED"}, 403
 
     @app.after_request
