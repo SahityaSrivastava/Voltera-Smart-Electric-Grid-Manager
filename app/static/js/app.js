@@ -837,6 +837,32 @@ function applyMapSize(isCompact, notify = false) {
     }
 }
 
+// Global helper for toggling login screen and workspace visibility
+window.setLoginScreenVisible = function(visible) {
+    const loginScreen = document.getElementById('login-screen');
+    const appWorkspace = document.getElementById('app-workspace');
+    if (visible) {
+        if (loginScreen) {
+            loginScreen.classList.remove('hidden');
+            loginScreen.style.setProperty('display', 'flex', 'important');
+        }
+        if (appWorkspace) {
+            appWorkspace.classList.add('hidden');
+            appWorkspace.style.setProperty('display', 'none', 'important');
+        }
+    } else {
+        if (loginScreen) {
+            loginScreen.classList.add('hidden');
+            loginScreen.style.setProperty('display', 'none', 'important');
+        }
+        if (appWorkspace) {
+            appWorkspace.classList.remove('hidden');
+            appWorkspace.style.setProperty('display', 'flex', 'important');
+        }
+    }
+};
+const setLoginScreenVisible = window.setLoginScreenVisible;
+
 function setupAuthListeners() {
     const loginForm = document.getElementById('login-form');
     const emailInput = document.getElementById('login-email');
@@ -881,6 +907,7 @@ function setupAuthListeners() {
                     showToast(data.error || 'Authentication failed', 'error');
                 }
             } catch (err) {
+                console.error('[Login Auth Error]', err);
                 showLoginError('Unable to connect to the authentication server.');
                 showToast('Unable to connect to server', 'error');
             } finally {
@@ -924,30 +951,6 @@ function setupAuthListeners() {
             }
         });
     }
-
-function setLoginScreenVisible(visible) {
-    const loginScreen = document.getElementById('login-screen');
-    const appWorkspace = document.getElementById('app-workspace');
-    if (visible) {
-        if (loginScreen) {
-            loginScreen.classList.remove('hidden');
-            loginScreen.style.setProperty('display', 'flex', 'important');
-        }
-        if (appWorkspace) {
-            appWorkspace.classList.add('hidden');
-            appWorkspace.style.setProperty('display', 'none', 'important');
-        }
-    } else {
-        if (loginScreen) {
-            loginScreen.classList.add('hidden');
-            loginScreen.style.setProperty('display', 'none', 'important');
-        }
-        if (appWorkspace) {
-            appWorkspace.classList.remove('hidden');
-            appWorkspace.style.setProperty('display', 'flex', 'important');
-        }
-    }
-}
 
     // Sign Out Button
     const logoutBtn = document.getElementById('btn-logout');
