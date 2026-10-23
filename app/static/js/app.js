@@ -373,11 +373,25 @@ window.switchView = function(viewId) {
     if (navBtn) {
         navBtn.click();
     } else {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.nav-btn, .mobile-tab-btn').forEach(b => {
+            if (b.getAttribute('data-view') === viewId) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         const panel = document.getElementById(viewId);
         if (panel) panel.classList.add('active');
     }
+    // Synchronize mobile tabs
+    document.querySelectorAll('.mobile-tab-btn').forEach(b => {
+        if (b.getAttribute('data-view') === viewId) {
+            b.classList.add('active');
+        } else if (b.getAttribute('data-view')) {
+            b.classList.remove('active');
+        }
+    });
 };
 
 // ==============================================================================
@@ -669,6 +683,20 @@ function closeProfileMenu() {
     }
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
 }
+
+window.toggleUserProfileMenu = function(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    const menu = document.getElementById('user-profile-menu');
+    if (!menu) return;
+    if (menu.classList.contains('hidden')) {
+        openProfileMenu();
+    } else {
+        closeProfileMenu();
+    }
+};
 window.closeProfileMenu = closeProfileMenu;
 
 // Map Mode, Layout & Sizing Controllers
@@ -969,15 +997,32 @@ function applyRoleBasedAccess(user) {
     const config = ROLE_CONFIG[role] || ROLE_CONFIG.CONSUMER;
     state.activeRoleConfig = config;
 
-    // 1. Navigation items visibility
-    document.querySelectorAll('.nav-btn').forEach(btn => {
+    // 1. Navigation items visibility (desktop & mobile)
+    document.querySelectorAll('.nav-btn, .mobile-tab-btn:not(.mob-menu-trigger)').forEach(btn => {
         const viewId = btn.getAttribute('data-view');
+        if (!viewId) return;
         if (config.allowedViews.includes(viewId)) {
             btn.classList.remove('hidden');
         } else {
             btn.classList.add('hidden');
         }
     });
+
+    // Mobile tabs specific role differentiation (Route vs Fleet)
+    const mobCrewBtn = document.getElementById('mob-nav-crew');
+    const mobFleetBtn = document.getElementById('mob-nav-fleet');
+    if (mobCrewBtn && mobFleetBtn) {
+        if (role === 'CREW') {
+            mobCrewBtn.classList.remove('hidden');
+            mobFleetBtn.classList.add('hidden');
+        } else if (config.allowedViews.includes('view-fleet')) {
+            mobCrewBtn.classList.add('hidden');
+            mobFleetBtn.classList.remove('hidden');
+        } else {
+            mobCrewBtn.classList.add('hidden');
+            mobFleetBtn.classList.add('hidden');
+        }
+    }
 
     // 2. Profile dropdown navigation shortcuts visibility
     const shortcuts = document.querySelectorAll('#dropdown-nav-shortcuts button[data-target-view]');
@@ -1062,7 +1107,7 @@ function onLoginSuccess(user) {
 // 2. NAVIGATION & TABS
 // ==============================================================================
 function setupNavigation() {
-    const navButtons = document.querySelectorAll('.nav-btn');
+    const navButtons = document.querySelectorAll('.nav-btn, .mobile-tab-btn:not(.mob-menu-trigger)');
     navButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             sound.play('click');
@@ -1077,8 +1122,13 @@ function setupNavigation() {
                 return;
             }
 
-            navButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            document.querySelectorAll('.nav-btn, .mobile-tab-btn:not(.mob-menu-trigger)').forEach(b => {
+                if (b.getAttribute('data-view') === viewId) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
 
             document.querySelectorAll('.view-panel').forEach(panel => {
                 panel.classList.remove('active');
@@ -1697,6 +1747,8 @@ async function loadAllData(isBackground = false) {
         const badgeFleet = document.getElementById('badge-fleet');
         const activeIncs = state.incidents.filter(i => i.status !== 'RESOLVED');
         if (badgeInc) badgeInc.textContent = activeIncs.length;
+        const mobBadgeInc = document.getElementById('mob-badge-incidents');
+        if (mobBadgeInc) mobBadgeInc.textContent = activeIncs.length;
         if (badgeFleet) badgeFleet.textContent = state.crews.filter(c => c.status === 'AVAILABLE').length;
 
         // Refresh dynamic notifications & slider status

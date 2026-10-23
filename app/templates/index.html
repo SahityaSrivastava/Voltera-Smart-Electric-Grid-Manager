@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#030b17">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <title>Voltera &bull; Power Grid Operations</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -897,6 +901,75 @@
                 </div>
             </div>
         </footer>
+        <!-- Mobile Bottom Navigation Bar (Thumb-Accessible for Smartphones) -->
+        <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Navigation">
+            <button type="button" class="mobile-tab-btn active" data-view="view-overview" id="mob-nav-overview">
+                <span class="mob-tab-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                </span>
+                <span class="mob-tab-label">Overview</span>
+            </button>
+            <button type="button" class="mobile-tab-btn" data-view="view-incidents" id="mob-nav-incidents">
+                <span class="mob-tab-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    <span class="mobile-nav-badge badge-red" id="mob-badge-incidents">0</span>
+                </span>
+                <span class="mob-tab-label">Outages</span>
+            </button>
+            <button type="button" class="mobile-tab-btn" data-view="view-substations" id="mob-nav-substations">
+                <span class="mob-tab-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 20h20M7 20V9l5-5 5 5v11M10 12h4v8h-4z"/>
+                    </svg>
+                </span>
+                <span class="mob-tab-label">Grid</span>
+            </button>
+            <button type="button" class="mobile-tab-btn crew-only hidden" data-view="view-crew-terminal" id="mob-nav-crew">
+                <span class="mob-tab-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 19 21 12 17 5 21 12 2"></polygon>
+                    </svg>
+                    <span class="mobile-nav-badge badge-red" id="mob-badge-crew">1</span>
+                </span>
+                <span class="mob-tab-label">Route</span>
+            </button>
+            <button type="button" class="mobile-tab-btn non-crew" data-view="view-fleet" id="mob-nav-fleet">
+                <span class="mob-tab-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="3" width="15" height="13"></rect>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                    </svg>
+                </span>
+                <span class="mob-tab-label">Crews</span>
+            </button>
+            <button type="button" class="mobile-tab-btn" data-view="view-citizen" id="mob-nav-citizen">
+                <span class="mob-tab-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </span>
+                <span class="mob-tab-label">Desk</span>
+            </button>
+            <button type="button" class="mobile-tab-btn mob-menu-trigger" id="mob-btn-more" onclick="toggleUserProfileMenu(event)" aria-label="More Menu">
+                <span class="mob-tab-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1.5"></circle>
+                        <circle cx="12" cy="5" r="1.5"></circle>
+                        <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                </span>
+                <span class="mob-tab-label">More</span>
+            </button>
+        </nav>
     </div>
 
     <!-- Dispatch Modal -->

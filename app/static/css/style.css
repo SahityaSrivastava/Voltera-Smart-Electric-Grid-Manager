@@ -2960,69 +2960,146 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
+/* ==========================================================================
+   Comprehensive Mobile Phone & Tablet Responsive Architecture
+   ========================================================================== */
+
+/* Mobile Bottom Navigation Bar (Hidden on Desktop) */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2800;
+    background: rgba(11, 23, 44, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(59, 130, 246, 0.25);
+    height: 60px;
+    padding: 0 4px calc(env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
+    justify-content: space-around;
+    align-items: center;
+}
+
+[data-theme="light"] .mobile-bottom-nav {
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    padding: 6px 2px;
+    cursor: pointer;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 52px;
+    transition: color 0.15s ease, transform 0.1s ease;
+}
+
+[data-theme="light"] .mobile-tab-btn {
+    color: #64748B;
+}
+
+.mobile-tab-btn:active {
+    transform: scale(0.92);
+}
+
+.mobile-tab-btn.active {
+    color: #38BDF8 !important;
+}
+
+[data-theme="light"] .mobile-tab-btn.active {
+    color: #0284C7 !important;
+}
+
+.mobile-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    width: 18px;
+    height: 3px;
+    border-radius: 2px;
+    background: #38BDF8;
+    box-shadow: 0 0 8px #38BDF8;
+}
+
+[data-theme="light"] .mobile-tab-btn.active::after {
+    background: #0284C7;
+    box-shadow: 0 0 8px rgba(2, 132, 199, 0.5);
+}
+
+.mob-tab-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.mob-tab-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+}
+
+.mob-tab-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    line-height: 1;
+}
+
+.mobile-nav-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 3px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #EF4444;
+    color: #FFFFFF;
+    border: 1.5px solid #0B172C;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
+}
+
+/* Tablet & Intermediate Screen Adjustments (max-width: 860px) */
 @media (max-width: 860px) {
-    /* Split Login Screen Stacking on Tablets & Small Windows */
     .split-login-container {
         grid-template-columns: 1fr;
         min-height: 100vh;
         overflow-y: auto;
     }
     .login-photo-side {
-        height: 240px;
-        min-height: 240px;
+        height: 200px;
+        min-height: 200px;
         width: 100%;
-        flex-shrink: 0;
     }
-
     .login-window-side {
-        padding: 28px 18px;
-        overflow-y: visible;
-        width: 100%;
+        padding: 24px 16px;
     }
     .minimal-login-card {
         max-width: 440px;
-        padding: 28px 22px;
+        padding: 24px 20px;
+        margin: auto;
     }
-
-    /* Enlarged Header Wrapping without Overflow */
-    .app-header {
-        height: auto !important;
-        min-height: 64px !important;
-        padding: 10px 16px !important;
-        flex-wrap: wrap;
-        gap: 10px !important;
-    }
-    .header-left {
-        order: 1;
-    }
-    .header-right {
-        order: 2;
-        margin-left: auto;
-        gap: 8px;
-    }
-    .nav-links {
-        order: 3;
-        width: 100%;
-        max-width: 100%;
-        justify-content: flex-start;
-        padding: 4px;
-        gap: 4px !important;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .nav-btn {
-        height: 34px !important;
-        font-size: 12px !important;
-        padding: 0 12px !important;
-    }
-    .global-search-box input {
-        width: 110px !important;
-    }
-    .global-search-box input:focus {
-        width: 150px !important;
-    }
-
-    /* Deck Layout Stacking */
     .overview-deck {
         flex-direction: column !important;
     }
@@ -3032,8 +3109,8 @@ input:focus, select:focus, textarea:focus {
         max-width: 100% !important;
     }
     #lucknow-map {
-        height: 380px !important;
-        min-height: 380px !important;
+        height: 340px !important;
+        min-height: 340px !important;
     }
     .two-col,
     .two-col-flow {
@@ -3048,59 +3125,551 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-@media (max-width: 600px) {
-    /* Mobile Phone Screen View */
-    .login-photo-side {
-        display: none;
-    }
-    .login-window-side {
-        padding: 24px 14px;
-    }
-    .minimal-login-card {
-        padding: 24px 18px;
-        border: 1px solid #1E293B;
-    }
-    .demo-pills-row {
-        flex-direction: column;
-        gap: 6px;
-    }
-    .app-header {
-        padding: 8px 12px !important;
-    }
-    .brand-title {
+/* Dedicated Smartphone Experience (max-width: 768px) */
+@media (max-width: 768px) {
+    /* Prevent iOS auto-zoom on inputs */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="search"],
+    select,
+    textarea {
         font-size: 16px !important;
+        -webkit-text-size-adjust: 100%;
     }
+
+    /* Activate Bottom Navigation Bar */
+    .mobile-bottom-nav {
+        display: flex !important;
+    }
+
+    /* Clean Compact Single-Row Mobile Header */
+    .app-header {
+        height: 56px !important;
+        min-height: 56px !important;
+        padding: 0 14px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 2600 !important;
+    }
+
+    .header-left {
+        order: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .brand-link {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
     .brand-logo-nav {
         width: 32px !important;
         height: 32px !important;
     }
+
+    .brand-title {
+        font-size: 17px !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.3px !important;
+    }
+
+    .brand-dept {
+        display: none !important;
+    }
+
+    /* Top scroller tabs hidden on mobile in favor of bottom bar */
+    .nav-scroller-wrap {
+        display: none !important;
+    }
+
+    .header-right {
+        order: 2 !important;
+        margin-left: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
     .global-search-box {
-        display: none;
+        display: none !important;
     }
-    .user-profile-trigger .user-name {
-        display: none;
-    }
-    .user-profile-trigger {
-        padding: 0 8px !important;
+
+    .notification-trigger-btn {
+        width: 36px !important;
         height: 36px !important;
     }
-    #lucknow-map {
-        height: 300px !important;
-        min-height: 300px !important;
+
+    .user-profile-trigger {
+        height: 36px !important;
+        padding: 0 !important;
+        width: 36px !important;
+        border-radius: 50% !important;
+        justify-content: center !important;
     }
-    .stats-row {
+
+    .user-profile-trigger .user-name,
+    .user-profile-trigger .dropdown-chevron {
+        display: none !important;
+    }
+
+    .user-avatar-circle {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 12px !important;
+    }
+
+    /* Main Workspace with Safe Bottom Inset */
+    .app-main {
+        padding: 12px 10px calc(80px + env(safe-area-inset-bottom, 12px)) 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Hide desktop global footer on smartphones */
+    .app-global-footer {
+        display: none !important;
+    }
+
+    /* Split Login Screen on Smartphone */
+    .login-wrapper.split-login-mode {
+        padding: 12px !important;
+        min-height: 100dvh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .split-login-container {
         grid-template-columns: 1fr !important;
+        width: 100% !important;
+        max-width: 400px !important;
+        margin: auto !important;
+        border-radius: 16px !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7) !important;
     }
+
+    .login-photo-side {
+        display: none !important;
+    }
+
+    .login-window-side {
+        padding: 24px 16px !important;
+        width: 100% !important;
+    }
+
+    .minimal-login-card {
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+    }
+
+    .login-card-brand {
+        margin-bottom: 20px !important;
+    }
+
+    .field-input-box {
+        height: 46px !important;
+    }
+
+    .btn-primary-signin {
+        height: 46px !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+    }
+
+    .demo-pills-row {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    .role-pill {
+        height: 42px !important;
+        justify-content: center !important;
+        font-size: 12.5px !important;
+        padding: 0 8px !important;
+    }
+
+    /* Floating Full-Width Dropdown Sheets on Mobile */
+    .notification-dropdown-menu,
+    .user-dropdown-menu {
+        position: fixed !important;
+        top: 62px !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: auto !important;
+        max-width: calc(100vw - 24px) !important;
+        max-height: calc(100dvh - 80px) !important;
+        overflow-y: auto !important;
+        border-radius: 14px !important;
+        z-index: 3500 !important;
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    /* Persistent Dispatch Alert Banner */
+    .crew-top-alert-banner {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 12px 14px !important;
+    }
+
+    .top-alert-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    .top-alert-actions .btn {
+        width: 100% !important;
+        height: 42px !important;
+        font-size: 13.5px !important;
+        justify-content: center !important;
+    }
+
+    /* Overview Dashboard Elements */
+    .home-operations-hero {
+        height: 110px !important;
+        border-radius: 10px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .quick-ops-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 12px 10px !important;
+        border-radius: 10px !important;
+    }
+
+    .quick-ops-search {
+        width: 100% !important;
+        display: flex !important;
+        gap: 6px !important;
+    }
+
+    .quick-ops-search input {
+        height: 44px !important;
+        flex: 1 !important;
+    }
+
+    .quick-ops-search .btn {
+        height: 44px !important;
+        padding: 0 16px !important;
+        font-weight: 700 !important;
+    }
+
+    .quick-ops-kbd {
+        display: none !important;
+    }
+
+    .quick-ops-live-tags {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+
+    /* 4-Stage Railway Stepper on Mobile */
+    .rail-journey-stepper {
+        padding: 12px 6px !important;
+        gap: 4px !important;
+    }
+
+    .step-marker {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 10px !important;
+    }
+
+    .step-label {
+        font-size: 9px !important;
+        white-space: normal !important;
+        max-width: 60px !important;
+        text-align: center !important;
+        line-height: 1.15 !important;
+    }
+
+    .step-sub {
+        display: none !important;
+    }
+
+    .stepper-line {
+        margin-bottom: 16px !important;
+    }
+
+    .quick-tracker-meta {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .meta-cell.actions .btn {
+        width: 100% !important;
+        height: 38px !important;
+    }
+
+    /* 2x2 Metric Cards Grid */
+    .stats-row {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .stat-card {
+        padding: 10px 10px !important;
+        border-radius: 10px !important;
+    }
+
+    .stat-value {
+        font-size: 22px !important;
+        margin: 4px 0 !important;
+    }
+
+    .stat-micro-tag {
+        font-size: 8.5px !important;
+    }
+
+    .stat-pill {
+        font-size: 9px !important;
+        padding: 2px 6px !important;
+    }
+
+    /* Horizontal Region Pills Toolbar */
+    .panel-toolbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    #region-filter-group {
+        display: flex !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        gap: 6px !important;
+        padding-bottom: 4px !important;
+        width: 100% !important;
+    }
+
+    #region-filter-group::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .pill-btn {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        height: 34px !important;
+        padding: 0 12px !important;
+        font-size: 12px !important;
+    }
+
+    .toolbar-actions {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+    }
+
+    /* Touch-Optimized Interactive Map & Canvas */
+    .map-container {
+        height: 290px !important;
+        border-radius: 10px !important;
+    }
+
+    #lucknow-map {
+        height: 290px !important;
+        min-height: 290px !important;
+    }
+
+    .map-controls {
+        top: 10px !important;
+        right: 10px !important;
+        gap: 6px !important;
+    }
+
+    .map-btn {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 18px !important;
+    }
+
+    .map-legend {
+        bottom: 8px !important;
+        left: 8px !important;
+        right: 8px !important;
+        width: auto !important;
+        padding: 4px 8px !important;
+        gap: 8px !important;
+        font-size: 9.5px !important;
+        flex-wrap: wrap !important;
+    }
+
+    /* Deck Layout Flow */
+    .deck-feeds-slot {
+        margin-top: 12px !important;
+    }
+
+    .two-col,
+    .two-col-flow {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    /* Data Tables Horizontal Touch Scrolling */
     .table-card {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-radius: 8px !important;
     }
+
     .data-table {
-        min-width: 480px;
+        min-width: 520px !important;
+        width: 100% !important;
     }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 10px !important;
+        font-size: 12px !important;
+    }
+
+    /* Field Crew Operations Terminal */
+    .crew-terminal-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .crew-head-right {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    .crew-terminal-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .directive-pills-row {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .terminal-meta-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    .t-meta-item {
+        padding: 8px 10px !important;
+    }
+
+    .terminal-actions-bar .action-btn-group {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .terminal-actions-bar .btn {
+        width: 100% !important;
+        height: 44px !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        justify-content: center !important;
+    }
+
+    .crew-route-canvas {
+        width: 100% !important;
+        height: 190px !important;
+    }
+
+    .route-canvas-hud {
+        padding: 5px 8px !important;
+    }
+
+    .hud-lbl {
+        font-size: 8px !important;
+    }
+
+    .hud-val {
+        font-size: 12px !important;
+    }
+
+    .route-sim-controls {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .route-sim-controls .btn {
+        width: 100% !important;
+        height: 42px !important;
+        justify-content: center !important;
+    }
+
+    .turn-steps-container {
+        padding: 10px !important;
+    }
+
+    /* Grid Cards (Substations & Facilities) */
+    .grid-cards {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    /* Touch-friendly Modals as Mobile Bottom Sheets */
+    .modal-backdrop {
+        padding: 8px !important;
+        align-items: flex-end !important;
+    }
+
     .modal-box {
-        width: 95vw !important;
-        padding: 18px 14px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 18px 18px 0 0 !important;
+        max-height: 85dvh !important;
+        overflow-y: auto !important;
+        padding: 20px 16px !important;
+    }
+
+    .modal-head .btn-close {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 24px !important;
+    }
+
+    /* Toast Notifications Positioned Above Bottom Navigation */
+    .toast-wrapper {
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+        left: 12px !important;
+        right: 12px !important;
+        align-items: center !important;
+    }
+
+    .toast-item {
+        width: 100% !important;
+        max-width: 100% !important;
+        text-align: center !important;
+        font-size: 13px !important;
+        padding: 10px 14px !important;
     }
 }
 
