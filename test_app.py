@@ -355,7 +355,7 @@ class PowerGridLucknowTestCase(unittest.TestCase):
         # 2. Bottom copyright line with integrated Version in main website and login screen
         self.assertIn('app-global-footer', html)
         self.assertIn('login-copyright-line', html)
-        self.assertIn('Version 1.0.1', html)
+        self.assertIn('Version 1.0.2', html)
         self.assertIn('footer-version-tag', html)
         self.assertIn('Madhyanchal Vidyut Vitaran Nigam Ltd. (MVVNL) / UPPCL', html)
         self.assertIn('All Rights Reserved.', html)

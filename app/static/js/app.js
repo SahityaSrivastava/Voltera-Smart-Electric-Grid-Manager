@@ -369,29 +369,38 @@ window.switchView = function(viewId) {
         showToast(`Access Restricted: This module requires elevated permissions.`, 'warning');
         viewId = config.defaultView;
     }
-    const navBtn = document.querySelector(`.nav-btn[data-view="${viewId}"]`);
-    if (navBtn) {
-        navBtn.click();
-    } else {
-        document.querySelectorAll('.nav-btn, .mobile-tab-btn').forEach(b => {
-            if (b.getAttribute('data-view') === viewId) {
-                b.classList.add('active');
-            } else {
-                b.classList.remove('active');
-            }
-        });
-        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-        const panel = document.getElementById(viewId);
-        if (panel) panel.classList.add('active');
-    }
-    // Synchronize mobile tabs
-    document.querySelectorAll('.mobile-tab-btn').forEach(b => {
+
+    // Synchronize both desktop buttons and mobile bottom tabs
+    document.querySelectorAll('.nav-btn, .mobile-tab-btn:not(.mob-menu-trigger)').forEach(b => {
         if (b.getAttribute('data-view') === viewId) {
             b.classList.add('active');
         } else if (b.getAttribute('data-view')) {
             b.classList.remove('active');
         }
     });
+
+    // Toggle panels
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById(viewId);
+    if (panel) {
+        panel.classList.add('active');
+    }
+
+    // Scroll to top of workspace
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    if (viewId === 'view-overview') {
+        resizeCanvas();
+        renderGISMap();
+    }
+
+    if (viewId === 'view-crew-terminal') {
+        reloadCrewDispatchDetails(false);
+    }
+
+    if (viewId === 'view-users' && state.user && state.user.role === 'ADMIN') {
+        loadUsersList();
+    }
 };
 
 // ==============================================================================
@@ -916,6 +925,30 @@ function setupAuthListeners() {
         });
     }
 
+function setLoginScreenVisible(visible) {
+    const loginScreen = document.getElementById('login-screen');
+    const appWorkspace = document.getElementById('app-workspace');
+    if (visible) {
+        if (loginScreen) {
+            loginScreen.classList.remove('hidden');
+            loginScreen.style.setProperty('display', 'flex', 'important');
+        }
+        if (appWorkspace) {
+            appWorkspace.classList.add('hidden');
+            appWorkspace.style.setProperty('display', 'none', 'important');
+        }
+    } else {
+        if (loginScreen) {
+            loginScreen.classList.add('hidden');
+            loginScreen.style.setProperty('display', 'none', 'important');
+        }
+        if (appWorkspace) {
+            appWorkspace.classList.remove('hidden');
+            appWorkspace.style.setProperty('display', 'flex', 'important');
+        }
+    }
+}
+
     // Sign Out Button
     const logoutBtn = document.getElementById('btn-logout');
     if (logoutBtn) {
@@ -926,8 +959,7 @@ function setupAuthListeners() {
             } catch (err) {}
             sessionStorage.removeItem('voltera_active_session');
             state.user = null;
-            document.getElementById('app-workspace').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
+            setLoginScreenVisible(true);
             showToast('Signed out');
         });
     }
@@ -947,8 +979,7 @@ async function checkCurrentUser() {
     // If no active session in current tab, always show login page at start
     const hasActiveSession = sessionStorage.getItem('voltera_active_session') === 'true';
     if (!hasActiveSession) {
-        document.getElementById('login-screen').classList.remove('hidden');
-        document.getElementById('app-workspace').classList.add('hidden');
+        setLoginScreenVisible(true);
         return;
     }
 
@@ -959,13 +990,11 @@ async function checkCurrentUser() {
             onLoginSuccess(data.user);
         } else {
             sessionStorage.removeItem('voltera_active_session');
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('app-workspace').classList.add('hidden');
+            setLoginScreenVisible(true);
         }
     } catch (err) {
         sessionStorage.removeItem('voltera_active_session');
-        document.getElementById('login-screen').classList.remove('hidden');
-        document.getElementById('app-workspace').classList.add('hidden');
+        setLoginScreenVisible(true);
     }
 }
 
@@ -1061,8 +1090,7 @@ function applyRoleBasedAccess(user) {
 function onLoginSuccess(user) {
     state.user = user;
     sessionStorage.setItem('voltera_active_session', 'true');
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('app-workspace').classList.remove('hidden');
+    setLoginScreenVisible(false);
 
     const nameLabel = document.getElementById('user-display-name');
     const userAvatar = document.getElementById('user-avatar');
@@ -1109,47 +1137,11 @@ function onLoginSuccess(user) {
 function setupNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn, .mobile-tab-btn:not(.mob-menu-trigger)');
     navButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            sound.play('click');
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
             const viewId = btn.getAttribute('data-view');
-            if (!viewId) return;
-
-            const role = (state.user && state.user.role) ? state.user.role.toUpperCase() : 'CONSUMER';
-            const config = (typeof ROLE_CONFIG !== 'undefined' && ROLE_CONFIG[role]) ? ROLE_CONFIG[role] : null;
-            if (config && !config.allowedViews.includes(viewId)) {
-                sound.play('alert');
-                showToast(`Access Restricted: This module requires elevated permissions.`, 'warning');
-                return;
-            }
-
-            document.querySelectorAll('.nav-btn, .mobile-tab-btn:not(.mob-menu-trigger)').forEach(b => {
-                if (b.getAttribute('data-view') === viewId) {
-                    b.classList.add('active');
-                } else {
-                    b.classList.remove('active');
-                }
-            });
-
-            document.querySelectorAll('.view-panel').forEach(panel => {
-                panel.classList.remove('active');
-            });
-
-            const activePanel = document.getElementById(viewId);
-            if (activePanel) {
-                activePanel.classList.add('active');
-            }
-
-            if (viewId === 'view-overview') {
-                resizeCanvas();
-                renderGISMap();
-            }
-
-            if (viewId === 'view-crew-terminal') {
-                reloadCrewDispatchDetails(false);
-            }
-
-            if (viewId === 'view-users' && state.user && state.user.role === 'ADMIN') {
-                loadUsersList();
+            if (viewId) {
+                switchView(viewId);
             }
         });
     });
@@ -1363,12 +1355,13 @@ function initGISMap() {
         }
     }, { passive: true });
 
-    canvas.addEventListener('touchend', (e) => {
-        if (e.touches.length === 0) {
-            state.map.isDragging = false;
-            initialPinchDist = null;
-        }
-    }, { passive: true });
+    const resetTouchDrag = () => {
+        state.map.isDragging = false;
+        initialPinchDist = null;
+    };
+    canvas.addEventListener('touchend', resetTouchDrag, { passive: true });
+    window.addEventListener('touchend', resetTouchDrag, { passive: true });
+    window.addEventListener('touchcancel', resetTouchDrag, { passive: true });
 
     // Substation click selection
     canvas.addEventListener('click', (e) => {
