@@ -4997,4 +4997,746 @@ input:focus, select:focus, textarea:focus {
     color: #047857;
 }
 
+/* ==============================================================================
+   VOLTERA 2.0 - TEMPORARY TEST MODE SWITCHER & ADVANCED MOBILE REFINEMENTS
+   ============================================================================== */
 
+:root {
+    --test-mobile-frame-width: 390px;
+}
+
+/* 1. Floating Test Mode Switcher Widget */
+.test-mode-switcher {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, sans-serif);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+@media (max-width: 768px) {
+    .test-mode-switcher {
+        bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+        right: 12px !important;
+    }
+}
+body.force-mobile-mode .test-mode-switcher {
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 12px !important;
+}
+
+.test-switcher-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* Collapsed Mini Pill Button */
+.test-mini-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(11, 23, 44, 0.94);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    color: #F8FAFC;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(56, 189, 248, 0.25);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.test-mini-badge:hover {
+    background: #0F1F3D;
+    border-color: #38BDF8;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7), 0 0 18px rgba(56, 189, 248, 0.4);
+    transform: translateY(-1px);
+}
+
+.test-dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #38BDF8;
+    box-shadow: 0 0 8px #38BDF8;
+    animation: testPulse 2s infinite;
+}
+
+@keyframes testPulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(56, 189, 248, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+
+.test-mini-label {
+    letter-spacing: 0.3px;
+    color: #94A3B8;
+}
+
+.test-current-tag {
+    background: #1E3A8A;
+    color: #60A5FA;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Expanded Control Panel */
+.test-expanded-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(11, 23, 44, 0.96);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 16px;
+    padding: 12px 14px;
+    width: 250px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(56, 189, 248, 0.2);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    margin-bottom: 8px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: bottom right;
+}
+
+.test-mode-switcher.collapsed .test-expanded-panel {
+    display: none !important;
+}
+.test-mode-switcher:not(.collapsed) .test-mini-badge {
+    display: none !important;
+}
+
+.test-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.test-header-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #F8FAFC;
+    letter-spacing: 0.5px;
+}
+
+.test-badge-temp {
+    font-size: 8.5px;
+    font-weight: 800;
+    background: rgba(239, 68, 68, 0.2);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+.test-btn-close {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.test-btn-close:hover {
+    color: #F8FAFC;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.test-switch-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.test-view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(15, 23, 42, 0.7);
+    color: #CBD5E1;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.test-view-btn:hover {
+    background: rgba(30, 41, 59, 0.9);
+    color: #FFFFFF;
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+.test-view-btn.active {
+    background: linear-gradient(135deg, #1D4ED8 0%, #0284C7 100%);
+    border-color: #38BDF8;
+    color: #FFFFFF;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+}
+
+.test-presets-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.test-presets-lbl {
+    font-size: 9.5px;
+    color: #94A3B8;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.test-chips-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.test-chip {
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(15, 23, 42, 0.6);
+    color: #94A3B8;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.test-chip:hover {
+    color: #FFFFFF;
+    border-color: rgba(56, 189, 248, 0.3);
+}
+
+.test-chip.active {
+    background: #0284C7;
+    color: #FFFFFF;
+    border-color: #38BDF8;
+}
+
+.test-panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.test-info-hint {
+    font-size: 9px;
+    color: #64748B;
+}
+
+.test-btn-reset {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94A3B8;
+    font-size: 9.5px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.test-btn-reset:hover {
+    color: #F8FAFC;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* 2. Desktop Phone Simulator Frame (when force-mobile-mode is active on screens > 768px) */
+@media (min-width: 769px) {
+    body.force-mobile-mode {
+        background-color: #030712 !important;
+        background-image: radial-gradient(rgba(56, 189, 248, 0.12) 1px, transparent 1px) !important;
+        background-size: 24px 24px !important;
+        min-height: 100vh !important;
+        padding: 20px 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    body.force-mobile-mode .login-wrapper,
+    body.force-mobile-mode .app-shell {
+        max-width: var(--test-mobile-frame-width, 390px) !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        min-height: 844px !important;
+        border-radius: 38px !important;
+        border: 9px solid #1E293B !important;
+        box-shadow: 0 25px 65px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 40px rgba(56, 189, 248, 0.25) !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        position: relative !important;
+        background-color: var(--bg-primary, #050B14) !important;
+    }
+
+    /* Dynamic Island Phone Simulation Notch */
+    body.force-mobile-mode .app-shell::before {
+        content: '';
+        display: block;
+        width: 105px;
+        height: 22px;
+        background: #000000;
+        border-radius: 11px;
+        margin: 6px auto -28px auto;
+        position: relative;
+        z-index: 2500;
+        box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.15);
+    }
+}
+
+/* 3. Comprehensive Mobile Layout Overrides when force-mobile-mode is active */
+body.force-mobile-mode input[type="text"],
+body.force-mobile-mode input[type="email"],
+body.force-mobile-mode input[type="password"],
+body.force-mobile-mode input[type="tel"],
+body.force-mobile-mode input[type="search"],
+body.force-mobile-mode select,
+body.force-mobile-mode textarea {
+    font-size: 16px !important;
+}
+
+body.force-mobile-mode .app-header {
+    height: 54px !important;
+    min-height: 54px !important;
+    padding: 0 12px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    position: sticky !important;
+    top: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+body.force-mobile-mode .nav-scroller-wrap,
+body.force-mobile-mode .global-search-box,
+body.force-mobile-mode .brand-dept,
+body.force-mobile-mode .app-global-footer,
+body.force-mobile-mode .segmented-control,
+body.force-mobile-mode .map-legend,
+body.force-mobile-mode .quick-ops-kbd {
+    display: none !important;
+}
+
+body.force-mobile-mode .mobile-search-toggle-btn {
+    display: inline-flex !important;
+}
+
+body.force-mobile-mode .mobile-bottom-nav {
+    display: flex !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 56px !important;
+    padding: 0 4px calc(env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 2800 !important;
+    background: rgba(11, 23, 44, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(59, 130, 246, 0.25) !important;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6) !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+body.force-mobile-mode .app-main {
+    padding: 10px 10px calc(72px + env(safe-area-inset-bottom, 10px)) 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+body.force-mobile-mode .overview-deck {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+}
+
+body.force-mobile-mode .deck-map-slot,
+body.force-mobile-mode .deck-feeds-slot,
+body.force-mobile-mode .two-col,
+body.force-mobile-mode .two-col-flow,
+body.force-mobile-mode .crew-terminal-grid,
+body.force-mobile-mode .grid-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    gap: 10px !important;
+}
+
+body.force-mobile-mode .stats-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+}
+
+body.force-mobile-mode .map-container,
+body.force-mobile-mode #lucknow-map {
+    height: 260px !important;
+    min-height: 260px !important;
+    width: 100% !important;
+}
+
+body.force-mobile-mode .home-operations-hero {
+    height: 100px !important;
+}
+
+body.force-mobile-mode .mob-map-expand-btn {
+    display: inline-flex !important;
+}
+
+body.force-mobile-mode .closest-hero-body {
+    flex-direction: column !important;
+    align-items: stretch !important;
+}
+
+body.force-mobile-mode .closest-hero-action,
+body.force-mobile-mode .closest-hero-action .btn {
+    width: 100% !important;
+}
+
+body.force-mobile-mode .modal-backdrop {
+    padding: 8px !important;
+    align-items: flex-end !important;
+}
+
+body.force-mobile-mode .modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 18px 18px 0 0 !important;
+    max-height: 85dvh !important;
+}
+
+/* 4. Force Desktop Mode (Overrides when testing desktop on mobile devices <= 768px) */
+@media (max-width: 768px) {
+    body.force-desktop-mode .app-shell,
+    body.force-desktop-mode .login-wrapper {
+        min-width: 1100px !important;
+        width: 1100px !important;
+        overflow-x: auto !important;
+    }
+
+    body.force-desktop-mode .mobile-bottom-nav {
+        display: none !important;
+    }
+
+    body.force-desktop-mode .nav-scroller-wrap {
+        display: flex !important;
+    }
+
+    body.force-desktop-mode .brand-dept {
+        display: inline-block !important;
+    }
+
+    body.force-desktop-mode .global-search-box {
+        display: flex !important;
+    }
+
+    body.force-desktop-mode .mobile-search-toggle-btn {
+        display: none !important;
+    }
+
+    body.force-desktop-mode .stats-row {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+
+    body.force-desktop-mode .overview-deck {
+        display: flex !important;
+        flex-direction: row !important;
+    }
+
+    body.force-desktop-mode .deck-map-slot {
+        width: 58% !important;
+    }
+
+    body.force-desktop-mode .deck-feeds-slot {
+        width: 42% !important;
+    }
+
+    body.force-desktop-mode .two-col,
+    body.force-desktop-mode .two-col-flow {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    body.force-desktop-mode .app-global-footer {
+        display: block !important;
+    }
+
+    body.force-desktop-mode #lucknow-map {
+        height: 440px !important;
+        min-height: 440px !important;
+    }
+
+    body.force-desktop-mode .segmented-control {
+        display: inline-flex !important;
+    }
+
+    body.force-desktop-mode .app-main {
+        padding: 24px 28px !important;
+    }
+}
+
+/* 5. Mobile Search Bar & Controls */
+.mobile-search-toggle-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm, 6px);
+    background: #0B2548;
+    border: 1px solid #2563EB;
+    color: #BFDBFE;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mobile-search-toggle-btn:hover,
+.mobile-search-toggle-btn.active {
+    background: #1D4ED8;
+    border-color: #60A5FA;
+    color: #FFFFFF;
+}
+
+@media (max-width: 768px) {
+    .mobile-search-toggle-btn {
+        display: inline-flex !important;
+    }
+}
+
+.mobile-search-bar-wrap {
+    position: sticky;
+    top: 54px;
+    z-index: 1050;
+    width: 100%;
+    background: rgba(11, 23, 44, 0.98);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    padding: 8px 12px;
+    box-sizing: border-box;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    animation: slideDownSearch 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDownSearch {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.mobile-search-input-box {
+    display: flex;
+    align-items: center;
+    background: #050B14;
+    border: 1px solid #1E3A8A;
+    border-radius: 8px;
+    padding: 0 10px;
+    height: 42px;
+    gap: 8px;
+}
+
+.mobile-search-input-box input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #F8FAFC;
+    font-size: 15px;
+    outline: none;
+}
+
+.mobile-search-input-box input::placeholder {
+    color: #64748B;
+}
+
+.btn-clear-mob-search {
+    background: transparent;
+    border: none;
+    color: #64748B;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 6px;
+}
+.btn-clear-mob-search:hover {
+    color: #F8FAFC;
+}
+
+/* 6. Mobile Sheet Backdrop */
+.mobile-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 2700;
+    transition: opacity 0.2s ease;
+}
+
+/* 7. Mobile Bottom Sheet Mode for Menus */
+@media (max-width: 768px) {
+    .user-dropdown-menu.bottom-sheet-mode,
+    .notification-dropdown-menu.bottom-sheet-mode {
+        top: auto !important;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+        border-radius: 18px 18px 0 0 !important;
+        max-height: calc(85dvh - 60px) !important;
+        border-bottom: none !important;
+        box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.8) !important;
+        animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+}
+body.force-mobile-mode .user-dropdown-menu.bottom-sheet-mode,
+body.force-mobile-mode .notification-dropdown-menu.bottom-sheet-mode {
+    top: auto !important;
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 18px 18px 0 0 !important;
+    max-height: calc(85dvh - 60px) !important;
+    border-bottom: none !important;
+    box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.8) !important;
+    animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes slideUpSheet {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* 8. Mobile Map Expand Mode & Gesture Hint */
+.mobile-map-gesture-hint {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    z-index: 10;
+    background: rgba(8, 19, 43, 0.9);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #93C5FD;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    backdrop-filter: blur(6px);
+}
+
+.mob-map-expand-btn {
+    display: none;
+}
+@media (max-width: 768px) {
+    .mob-map-expand-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+#lucknow-map.map-expanded {
+    height: 420px !important;
+    min-height: 420px !important;
+    transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 9. Data Table Horizontal Scroll Hint */
+@media (max-width: 768px) {
+    .table-card {
+        position: relative;
+        background: linear-gradient(to right, transparent, transparent),
+                    linear-gradient(to right, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.6)) 100% 0/20px 100% no-repeat;
+    }
+}
+body.force-mobile-mode .table-card {
+    position: relative;
+    background: linear-gradient(to right, transparent, transparent),
+                linear-gradient(to right, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.6)) 100% 0/20px 100% no-repeat;
+}
+
+/* 10. Refined Stepper & Ergonomic Touch Padding */
+@media (max-width: 768px) {
+    .rail-journey-stepper {
+        padding: 12px 6px !important;
+        align-items: center !important;
+        overflow-x: auto !important;
+    }
+    .stepper-step {
+        min-width: 52px !important;
+    }
+    .step-marker {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+    }
+    .stepper-line {
+        margin-bottom: 16px !important;
+        height: 2px !important;
+    }
+    .step-label {
+        font-size: 9px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+    }
+    .pill-btn {
+        height: 36px !important;
+        font-size: 12px !important;
+        padding: 0 12px !important;
+    }
+    .btn-primary, .btn-secondary {
+        min-height: 42px;
+    }
+}
+body.force-mobile-mode .rail-journey-stepper {
+    padding: 12px 6px !important;
+    align-items: center !important;
+}
+body.force-mobile-mode .stepper-step {
+    min-width: 52px !important;
+}
+body.force-mobile-mode .step-marker {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+}
+body.force-mobile-mode .stepper-line {
+    margin-bottom: 16px !important;
+    height: 2px !important;
+}
+body.force-mobile-mode .step-label {
+    font-size: 9px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+}
+body.force-mobile-mode .pill-btn {
+    height: 36px !important;
+    font-size: 12px !important;
+    padding: 0 12px !important;
+}

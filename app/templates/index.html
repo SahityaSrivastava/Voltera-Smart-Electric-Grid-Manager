@@ -148,6 +148,14 @@
                     <kbd class="kbd-hint">/</kbd>
                 </div>
 
+                <!-- Mobile Instant Search Trigger Button -->
+                <button type="button" class="mobile-search-toggle-btn" id="btn-mob-search-toggle" onclick="toggleMobileSearch(event)" aria-label="Search Grid" title="Search Grid">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+
                 <!-- Cross-Device Alert / Notification Center -->
                 <div class="notification-wrapper">
                     <button type="button" class="notification-trigger-btn" id="btn-notification-trigger" onclick="toggleNotificationCenter(event)" aria-haspopup="true" aria-expanded="false" title="Cross-Device Alerts &amp; Notifications">
@@ -260,6 +268,23 @@
                 </div>
             </div>
         </header>
+
+        <!-- Mobile Slide-Down Search Bar -->
+        <div id="mobile-search-bar" class="mobile-search-bar-wrap hidden">
+            <div class="mobile-search-input-box">
+                <span class="mob-search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="text" id="mobile-search-input" placeholder="Search substations, incidents, crews..." autocomplete="off">
+                <button type="button" class="btn-clear-mob-search" id="btn-clear-mob-search" onclick="clearMobileSearch()" title="Clear search">&times;</button>
+            </div>
+        </div>
+
+        <!-- Mobile Sheet & Dropdown Backdrop -->
+        <div id="mobile-sheet-backdrop" class="mobile-sheet-backdrop hidden" onclick="closeAllMobileSheets()"></div>
 
         <!-- Cross-Device Persistent Dispatch Alert Banner (Account-Based) -->
         <div id="crew-dispatch-top-alert" class="crew-top-alert-banner hidden">
@@ -430,9 +455,20 @@
                                 <canvas id="gis-canvas"></canvas>
                                 <!-- Map Overlay Controls -->
                                 <div class="map-controls">
+                                    <button type="button" class="map-btn mob-map-expand-btn" id="btn-mob-map-expand" onclick="toggleMobileMapExpand()" title="Expand or Shrink Map" aria-label="Expand Map">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <polyline points="15 3 21 3 21 9"></polyline>
+                                            <polyline points="9 21 3 21 3 15"></polyline>
+                                            <line x1="21" y1="3" x2="14" y2="10"></line>
+                                            <line x1="3" y1="21" x2="10" y2="14"></line>
+                                        </svg>
+                                    </button>
                                     <button type="button" class="map-btn" id="map-zoom-in" title="Zoom in">+</button>
                                     <button type="button" class="map-btn" id="map-zoom-out" title="Zoom out">&minus;</button>
                                     <button type="button" class="map-btn map-btn-text" id="map-reset" title="Reset view">Center</button>
+                                </div>
+                                <div id="mob-map-gesture-hint" class="mobile-map-gesture-hint">
+                                    <span>👆 Pan with finger &bull; Pinch to zoom</span>
                                 </div>
                                 <!-- Solid Map Legend with Info Tip -->
                                 <div class="map-legend">
@@ -986,6 +1022,58 @@
 
     <!-- Toast Notifications -->
     <div id="toast-container" class="toast-wrapper"></div>
+
+    <!-- =====================================================================
+         TEMPORARY DEVICE VIEW MODE SWITCHER (FOR TESTING & VALIDATION)
+         ===================================================================== -->
+    <div id="test-mode-switcher" class="test-mode-switcher" role="region" aria-label="Device View Test Switcher">
+        <div class="test-switcher-container">
+            <!-- Collapsed Mini Pill Button -->
+            <button type="button" class="test-mini-badge" id="test-mini-badge" onclick="toggleTestSwitcherCollapse()" title="Click to open Test View Switcher">
+                <span class="test-dot-pulse"></span>
+                <span class="test-mini-label">🧪 View Test:</span>
+                <span class="test-current-tag" id="test-current-tag">Auto</span>
+            </button>
+
+            <!-- Expanded Control Panel -->
+            <div class="test-expanded-panel" id="test-expanded-panel">
+                <div class="test-panel-header">
+                    <div class="test-header-title">
+                        <span class="test-lab-icon">🧪</span>
+                        <strong>VIEWPORT TEST MODE</strong>
+                        <span class="test-badge-temp">TEST ONLY</span>
+                    </div>
+                    <button type="button" class="test-btn-close" onclick="toggleTestSwitcherCollapse()" title="Minimize Test Panel">&minus;</button>
+                </div>
+                
+                <div class="test-switch-row">
+                    <button type="button" class="test-view-btn" id="btn-test-desktop" onclick="setTestViewMode('desktop')">
+                        <span class="test-btn-ico">🖥️</span>
+                        <span class="test-btn-name">Desktop</span>
+                    </button>
+                    <button type="button" class="test-view-btn" id="btn-test-mobile" onclick="setTestViewMode('mobile')">
+                        <span class="test-btn-ico">📱</span>
+                        <span class="test-btn-name">Mobile</span>
+                    </button>
+                </div>
+
+                <!-- Screen Size Presets (Visible when Mobile Mode is active) -->
+                <div class="test-presets-row" id="test-presets-row">
+                    <span class="test-presets-lbl">Phone Width:</span>
+                    <div class="test-chips-group">
+                        <button type="button" class="test-chip active" data-width="390" onclick="setTestMobileWidth(390, this)" title="iPhone Standard (390px)">390px</button>
+                        <button type="button" class="test-chip" data-width="430" onclick="setTestMobileWidth(430, this)" title="Pro Max / Plus (430px)">430px</button>
+                        <button type="button" class="test-chip" data-width="fluid" onclick="setTestMobileWidth('fluid', this)" title="Fluid Full Width">Fluid</button>
+                    </div>
+                </div>
+
+                <div class="test-panel-footer">
+                    <span class="test-info-hint">Live preview &bull; Toggle anytime</span>
+                    <button type="button" class="test-btn-reset" onclick="resetTestViewMode()" title="Reset to Auto/Default">Auto</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- App JavaScript -->
     <script src="{{ url_for('static', filename='js/app.js') }}?v={{ cache_buster }}"></script>
