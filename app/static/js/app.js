@@ -420,7 +420,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initQuickOperationsTracker();
     loadCrewAccounts();
     setupNotificationCenter();
-    initTestViewSwitcher();
 
     // Check if previously authenticated session exists
     checkCurrentUser();
@@ -675,38 +674,23 @@ function setupUserProfileMenu() {
     });
 }
 
-function openProfileMenu(isBottomSheet = false) {
+function openProfileMenu() {
     const trigger = document.getElementById('user-profile-btn');
     const menu = document.getElementById('user-profile-menu');
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
     if (menu) {
-        if (isBottomSheet || window.innerWidth <= 768 || document.body.classList.contains('force-mobile-mode')) {
-            menu.classList.add('bottom-sheet-mode');
-        } else {
-            menu.classList.remove('bottom-sheet-mode');
-        }
         menu.classList.remove('hidden');
         sound.play('click');
     }
     if (trigger) trigger.setAttribute('aria-expanded', 'true');
-    if (backdrop && (window.innerWidth <= 768 || document.body.classList.contains('force-mobile-mode'))) {
-        backdrop.classList.remove('hidden');
-    }
 }
 
 function closeProfileMenu() {
     const trigger = document.getElementById('user-profile-btn');
     const menu = document.getElementById('user-profile-menu');
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
     if (menu && !menu.classList.contains('hidden')) {
         menu.classList.add('hidden');
-        menu.classList.remove('bottom-sheet-mode');
     }
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
-    const notifMenu = document.getElementById('notification-center-menu');
-    if (backdrop && (!notifMenu || notifMenu.classList.contains('hidden'))) {
-        backdrop.classList.add('hidden');
-    }
 }
 
 window.toggleUserProfileMenu = function(e) {
@@ -717,7 +701,7 @@ window.toggleUserProfileMenu = function(e) {
     const menu = document.getElementById('user-profile-menu');
     if (!menu) return;
     if (menu.classList.contains('hidden')) {
-        openProfileMenu(true);
+        openProfileMenu();
     } else {
         closeProfileMenu();
     }
@@ -2803,44 +2787,25 @@ window.toggleNotificationCenter = function(e) {
     sound.play('click');
     const menu = document.getElementById('notification-center-menu');
     const trigger = document.getElementById('btn-notification-trigger');
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
     if (!menu) return;
 
     closeProfileMenu();
     const willOpen = menu.classList.contains('hidden');
     if (willOpen) {
-        if (window.innerWidth <= 768 || document.body.classList.contains('force-mobile-mode')) {
-            menu.classList.add('bottom-sheet-mode');
-        } else {
-            menu.classList.remove('bottom-sheet-mode');
-        }
         menu.classList.remove('hidden');
         if (trigger) trigger.setAttribute('aria-expanded', 'true');
-        if (backdrop && (window.innerWidth <= 768 || document.body.classList.contains('force-mobile-mode'))) {
-            backdrop.classList.remove('hidden');
-        }
         renderNotificationCenter();
     } else {
         menu.classList.add('hidden');
-        menu.classList.remove('bottom-sheet-mode');
         if (trigger) trigger.setAttribute('aria-expanded', 'false');
-        if (backdrop) backdrop.classList.add('hidden');
     }
 };
 
 window.closeNotificationCenter = function() {
     const menu = document.getElementById('notification-center-menu');
     const trigger = document.getElementById('btn-notification-trigger');
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
-    if (menu) {
-        menu.classList.add('hidden');
-        menu.classList.remove('bottom-sheet-mode');
-    }
+    if (menu) menu.classList.add('hidden');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
-    const profMenu = document.getElementById('user-profile-menu');
-    if (backdrop && (!profMenu || profMenu.classList.contains('hidden'))) {
-        backdrop.classList.add('hidden');
-    }
 };
 
 window.refreshNotifications = function(e) {
@@ -3438,233 +3403,5 @@ window.centerMapOnIncidentRoute = function() {
         scheduleMapRender();
         showToast('GIS map focused on emergency route vector', 'info');
     }
-};
-
-// ==============================================================================
-// 10. TEMPORARY VIEWPORT TEST MODE SWITCHER & ADVANCED MOBILE CONTROLLERS
-// ==============================================================================
-
-window.initTestViewSwitcher = function() {
-    const savedMode = localStorage.getItem('voltera_test_view_mode') || 'auto';
-    const savedWidth = localStorage.getItem('voltera_test_mobile_width') || '390';
-    
-    // Apply saved width preset
-    if (savedWidth) {
-        setTestMobileWidth(savedWidth, null, false);
-    }
-    
-    // Apply saved mode
-    if (savedMode === 'mobile') {
-        setTestViewMode('mobile', false);
-    } else if (savedMode === 'desktop') {
-        setTestViewMode('desktop', false);
-    } else {
-        updateTestSwitcherUI('auto');
-    }
-
-    // Auto-fade mobile map gesture hint after 4.5 seconds
-    setTimeout(() => {
-        const hint = document.getElementById('mob-map-gesture-hint');
-        if (hint) {
-            hint.style.opacity = '0';
-            setTimeout(() => hint.remove(), 600);
-        }
-    }, 4500);
-
-    // Synchronize window resize events to keep test switcher indicator up to date in auto mode
-    window.addEventListener('resize', () => {
-        const curMode = localStorage.getItem('voltera_test_view_mode') || 'auto';
-        if (curMode === 'auto') {
-            updateTestSwitcherUI('auto');
-        }
-    });
-};
-
-window.setTestViewMode = function(mode, triggerToast = true) {
-    const body = document.body;
-    const desktopBtn = document.getElementById('btn-test-desktop');
-    const mobileBtn = document.getElementById('btn-test-mobile');
-    const presetsRow = document.getElementById('test-presets-row');
-    const tagEl = document.getElementById('test-current-tag');
-
-    if (mode === 'mobile') {
-        body.classList.add('force-mobile-mode');
-        body.classList.remove('force-desktop-mode');
-        localStorage.setItem('voltera_test_view_mode', 'mobile');
-        if (mobileBtn) mobileBtn.classList.add('active');
-        if (desktopBtn) desktopBtn.classList.remove('active');
-        if (presetsRow) presetsRow.style.display = 'flex';
-        if (tagEl) tagEl.textContent = 'Mobile';
-        if (triggerToast) showToast('📱 Forced Mobile View Mode enabled (Test)', 'info');
-    } else if (mode === 'desktop') {
-        body.classList.add('force-desktop-mode');
-        body.classList.remove('force-mobile-mode');
-        localStorage.setItem('voltera_test_view_mode', 'desktop');
-        if (desktopBtn) desktopBtn.classList.add('active');
-        if (mobileBtn) mobileBtn.classList.remove('active');
-        if (presetsRow) presetsRow.style.display = 'none';
-        if (tagEl) tagEl.textContent = 'Desktop';
-        if (triggerToast) showToast('🖥️ Forced Desktop View Mode enabled (Test)', 'info');
-    }
-
-    // Trigger canvas resize & layout recalculations
-    window.dispatchEvent(new Event('resize'));
-    setTimeout(() => {
-        if (typeof resizeCanvas === 'function') resizeCanvas();
-        if (typeof scheduleMapRender === 'function') scheduleMapRender();
-        if (state.activeCrewDispatch && typeof drawCrewRouteCanvas === 'function') {
-            const canvas = document.getElementById('crew-route-canvas');
-            if (canvas && canvas.parentElement) {
-                canvas.width = canvas.parentElement.clientWidth || 360;
-                canvas.height = 180;
-            }
-        }
-    }, 120);
-};
-
-window.resetTestViewMode = function() {
-    document.body.classList.remove('force-mobile-mode');
-    document.body.classList.remove('force-desktop-mode');
-    localStorage.removeItem('voltera_test_view_mode');
-    updateTestSwitcherUI('auto');
-    showToast('Auto viewport mode restored', 'info');
-    window.dispatchEvent(new Event('resize'));
-    setTimeout(() => {
-        if (typeof resizeCanvas === 'function') resizeCanvas();
-        if (typeof scheduleMapRender === 'function') scheduleMapRender();
-    }, 120);
-};
-
-function updateTestSwitcherUI(mode) {
-    const desktopBtn = document.getElementById('btn-test-desktop');
-    const mobileBtn = document.getElementById('btn-test-mobile');
-    const presetsRow = document.getElementById('test-presets-row');
-    const tagEl = document.getElementById('test-current-tag');
-
-    const isScreenMobile = window.innerWidth <= 768;
-    if (mode === 'auto') {
-        if (desktopBtn) desktopBtn.classList.toggle('active', !isScreenMobile);
-        if (mobileBtn) mobileBtn.classList.toggle('active', isScreenMobile);
-        if (presetsRow) presetsRow.style.display = isScreenMobile ? 'flex' : 'none';
-        if (tagEl) tagEl.textContent = isScreenMobile ? 'Mob (Auto)' : 'Desk (Auto)';
-    }
-}
-
-window.setTestMobileWidth = function(width, btnEl, triggerToast = true) {
-    if (width === 'fluid') {
-        document.documentElement.style.setProperty('--test-mobile-frame-width', '100%');
-        localStorage.setItem('voltera_test_mobile_width', 'fluid');
-    } else {
-        document.documentElement.style.setProperty('--test-mobile-frame-width', width + 'px');
-        localStorage.setItem('voltera_test_mobile_width', String(width));
-    }
-
-    document.querySelectorAll('.test-chip').forEach(c => c.classList.remove('active'));
-    if (btnEl) {
-        btnEl.classList.add('active');
-    } else {
-        const match = document.querySelector(`.test-chip[data-width="${width}"]`);
-        if (match) match.classList.add('active');
-    }
-
-    if (triggerToast) showToast(`Phone width set to ${width === 'fluid' ? 'Fluid (100%)' : width + 'px'}`, 'info');
-    window.dispatchEvent(new Event('resize'));
-    setTimeout(() => {
-        if (typeof resizeCanvas === 'function') resizeCanvas();
-        if (typeof scheduleMapRender === 'function') scheduleMapRender();
-    }, 120);
-};
-
-window.toggleTestSwitcherCollapse = function() {
-    const switcher = document.getElementById('test-mode-switcher');
-    if (!switcher) return;
-    switcher.classList.toggle('collapsed');
-};
-
-// Mobile Search Bar Controller
-window.toggleMobileSearch = function(e) {
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    const searchBar = document.getElementById('mobile-search-bar');
-    const searchBtn = document.getElementById('btn-mob-search-toggle');
-    const searchInput = document.getElementById('mobile-search-input');
-    if (!searchBar) return;
-
-    const willOpen = searchBar.classList.contains('hidden');
-    if (willOpen) {
-        searchBar.classList.remove('hidden');
-        if (searchBtn) searchBtn.classList.add('active');
-        if (searchInput) {
-            searchInput.focus();
-            if (state.searchQuery) searchInput.value = state.searchQuery;
-        }
-    } else {
-        searchBar.classList.add('hidden');
-        if (searchBtn) searchBtn.classList.remove('active');
-    }
-};
-
-window.clearMobileSearch = function() {
-    const searchInput = document.getElementById('mobile-search-input');
-    const globalInput = document.getElementById('global-search');
-    const quickInput = document.getElementById('quick-track-input');
-    if (searchInput) searchInput.value = '';
-    if (globalInput) globalInput.value = '';
-    if (quickInput) quickInput.value = '';
-    state.searchQuery = '';
-    renderCurrentActiveView();
-    showToast('Search query cleared', 'info');
-};
-
-window.handleMobileSearch = function(e) {
-    const q = (e.target.value || '').trim();
-    state.searchQuery = q.toLowerCase();
-    const globalInput = document.getElementById('global-search');
-    if (globalInput) globalInput.value = q;
-    renderCurrentActiveView();
-};
-
-function renderCurrentActiveView() {
-    const activePanel = document.querySelector('.view-panel.active');
-    if (!activePanel) return;
-    const viewId = activePanel.id;
-    if (viewId === 'view-overview') {
-        renderSubstationTelemetry();
-        renderOverviewIncidents();
-        scheduleMapRender();
-    } else if (viewId === 'view-incidents') {
-        renderIncidents();
-    } else if (viewId === 'view-substations') {
-        renderSubstations();
-    } else if (viewId === 'view-fleet') {
-        renderFleet();
-    } else if (viewId === 'view-facilities') {
-        renderFacilities();
-    }
-}
-
-// Mobile Backdrop & Sheet Closes
-window.closeAllMobileSheets = function() {
-    closeProfileMenu();
-    closeNotificationCenter();
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
-    if (backdrop) backdrop.classList.add('hidden');
-};
-
-// Mobile GIS Map Expand Mode
-window.toggleMobileMapExpand = function() {
-    const map = document.getElementById('lucknow-map');
-    const btn = document.getElementById('btn-mob-map-expand');
-    if (!map) return;
-    map.classList.toggle('map-expanded');
-    const isExpanded = map.classList.contains('map-expanded');
-    if (btn) btn.classList.toggle('active', isExpanded);
-    showToast(isExpanded ? 'Map view expanded' : 'Map view compact', 'info');
-    setTimeout(() => {
-        resizeCanvas();
-        scheduleMapRender();
-    }, 320);
 };
 
