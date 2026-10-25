@@ -274,11 +274,20 @@ class PowerGridLucknowTestCase(unittest.TestCase):
         })
         self.assertEqual(pw_res.status_code, 400)
 
+        # 6. Privilege escalation prevention on quick-switch
+        self.client.post('/api/auth/logout')
+        esc_res = self.client.post('/api/auth/quick-switch', json={'role': 'ADMIN'})
+        self.assertEqual(esc_res.status_code, 403)
+
+        esc_res2 = self.client.post('/api/auth/quick-switch', json={'email': 'admin@lesa.up.gov.in'})
+        self.assertEqual(esc_res2.status_code, 403)
+
     def test_10_static_asset_caching_and_performance(self):
         # 1. Verify static assets receive caching header
         res = self.client.get('/static/css/style.css')
         self.assertEqual(res.status_code, 200)
         self.assertIn('max-age=86400', res.headers.get('Cache-Control', ''))
+        _ = res.get_data()
         res.close()
 
         # 2. Verify dynamic API routes enforce no-cache
@@ -355,7 +364,7 @@ class PowerGridLucknowTestCase(unittest.TestCase):
         # 2. Bottom copyright line with integrated Version in main website and login screen
         self.assertIn('app-global-footer', html)
         self.assertIn('login-copyright-line', html)
-        self.assertIn('Version 1.1.0', html)
+        self.assertIn('Version 1.2.0', html)
         self.assertIn('footer-version-tag', html)
         self.assertIn('Madhyanchal Vidyut Vitaran Nigam Ltd. (MVVNL) / UPPCL', html)
         self.assertIn('All Rights Reserved.', html)
@@ -466,12 +475,33 @@ class PowerGridLucknowTestCase(unittest.TestCase):
         self.assertGreaterEqual(sim_data['severity'], 80)
         self.assertEqual(sim_data['transformer']['status'], 'CRITICAL')
 
+        # 3b. Emergency clear RBAC tests:
+        # Operator cannot clear emergencies (Admin only)
+        res_op_clear = self.client.post('/api/emergency/clear')
+        self.assertEqual(res_op_clear.status_code, 403)
+
+        # Login as Admin and clear emergency
+        self.client.post('/api/auth/logout')
+        res_admin_login = self.client.post('/api/auth/login', json={
+            'email': 'admin@lesa.up.gov.in',
+            'password': 'Admin@Lucknow2026'
+        })
+        self.assertEqual(res_admin_login.status_code, 200)
+
+        res_clear = self.client.post('/api/emergency/clear')
+        self.assertEqual(res_clear.status_code, 200)
+        clear_data = res_clear.get_json()
+        self.assertTrue(clear_data['success'])
+
         # 4. Check UI elements on homepage
         home_res = self.client.get('/')
         self.assertEqual(home_res.status_code, 200)
         html = home_res.get_data(as_text=True)
         self.assertIn('id="btn-notif-mark-read"', html)
         self.assertIn('id="btn-trigger-emergency"', html)
+        self.assertIn('id="btn-clear-emergency"', html)
+        self.assertIn('id="view-developer"', html)
+        self.assertIn('id="nav-developer"', html)
         self.assertIn('id="btn-mob-search-toggle"', html)
         self.assertIn('id="mobile-search-bar"', html)
         self.assertIn('id="mobile-sheet-backdrop"', html)
@@ -481,6 +511,7 @@ class PowerGridLucknowTestCase(unittest.TestCase):
         self.assertIn('data-target-view="view-incidents"', html)
         self.assertIn('data-target-view="view-substations"', html)
         self.assertIn('data-target-view="view-facilities"', html)
+        self.assertIn('data-target-view="view-developer"', html)
 
         # 5. Check CSS ensures mobile backdrop blur is removed and disabled
         css_res = self.client.get('/static/css/style.css')

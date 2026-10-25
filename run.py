@@ -29,14 +29,13 @@ if __name__ == "__main__":
         try:
             db.create_all()
             if not Transformer.query.first():
-                print("[AutoSeed] Initializing database...")
-                seed_database()
+                print("[AutoSeed] Initializing empty database...")
+                seed_database(force_reset=False)
             else:
                 from app.services import train_model
                 train_model()
         except Exception as e:
-            print(f"[Init] Database notice: {e}")
-            seed_database()
+            print(f"[Init] Database notice: {e}. Preserving existing database records.")
 
     preferred = int(os.environ.get("PORT", 5000))
     port = find_available_port(preferred)

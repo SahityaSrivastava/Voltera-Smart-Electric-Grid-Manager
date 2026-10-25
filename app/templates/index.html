@@ -33,7 +33,7 @@
                         <div class="login-brand-meta">
                             <div class="brand-title-row">
                                 <h1 class="login-brand-title">Voltera</h1>
-                                <span class="footer-version-tag header-version-tag">Version 1.1.0</span>
+                                <span class="footer-version-tag header-version-tag">Version 1.2.0</span>
                             </div>
                             <span class="login-brand-subtitle">Power Grid Operations</span>
                         </div>
@@ -101,7 +101,7 @@
 
                     <!-- Bottom Login Screen Copyright Line with Integrated Version -->
                     <div class="login-copyright-line">
-                        &copy; 2026 Voltera Power Grid Operations &bull; Version 1.1.0 &bull; MVVNL / UPPCL &bull; All Rights Reserved.
+                        &copy; 2026 Voltera Power Grid Operations &bull; Version 1.2.0 &bull; MVVNL / UPPCL &bull; All Rights Reserved.
                     </div>
                 </div>
             </div>
@@ -118,7 +118,7 @@
                     <div class="brand-text-group">
                         <div class="brand-title-row">
                             <span class="brand-title">Voltera</span>
-                            <span class="footer-version-tag header-version-tag">Version 1.1.0</span>
+                            <span class="footer-version-tag header-version-tag">Version 1.2.0</span>
                         </div>
                         <span class="brand-dept">Grid Operations</span>
                     </div>
@@ -140,6 +140,7 @@
                     <button class="nav-btn" data-view="view-citizen" id="nav-citizen"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span><span class="nav-label">Report Outage</span></button>
                     <button class="nav-btn crew-only hidden" data-view="view-crew-terminal" id="nav-crew-terminal"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 19 21 12 17 5 21 12 2"></polygon></svg></span><span class="nav-label">My Dispatch &amp; Route</span> <span class="nav-badge badge-red" id="badge-crew-dispatch">1</span></button>
                     <button class="nav-btn admin-only hidden" data-view="view-users" id="nav-users"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span><span class="nav-label">User Accounts</span></button>
+                    <button class="nav-btn admin-only hidden" data-view="view-developer" id="nav-developer"><span class="nav-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span><span class="nav-label">Developer</span></button>
                 </nav>
                 <button type="button" class="nav-slider-btn nav-slider-right" id="btn-nav-slide-right" onclick="slideNav(220)" title="Slide Menu Right" aria-label="Slide Menu Right">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -269,13 +270,14 @@
                             <button type="button" class="dropdown-item" data-target-view="view-crew-terminal" onclick="switchView('view-crew-terminal'); closeProfileMenu();">Crew Dispatch &amp; Route Terminal</button>
                             <button type="button" class="dropdown-item" data-target-view="view-citizen" onclick="switchView('view-citizen'); closeProfileMenu();">Citizen Outage Desk</button>
                             <button type="button" class="dropdown-item admin-only hidden" id="dropdown-item-users" data-target-view="view-users" onclick="switchView('view-users'); closeProfileMenu();">User Accounts</button>
+                            <button type="button" class="dropdown-item admin-only hidden" id="dropdown-item-developer" data-target-view="view-developer" onclick="switchView('view-developer'); closeProfileMenu();">Developer &amp; Test Tools</button>
                         </div>
 
                         <div class="dropdown-divider"></div>
 
                         <div class="dropdown-footer">
                             <button type="button" class="btn btn-secondary btn-sm btn-full" id="btn-logout">Sign Out</button>
-                            <div class="dropdown-version-row">Voltera Grid Operations &bull; Version 1.1.0</div>
+                            <div class="dropdown-version-row">Voltera Grid Operations &bull; Version 1.2.0</div>
                         </div>
                     </div>
                 </div>
@@ -334,13 +336,6 @@
                         <input type="text" id="quick-track-input" placeholder="Quick Search: Outage Docket or Substation..." autocomplete="off">
                         <button type="button" class="btn btn-primary btn-sm" id="btn-quick-track">Track</button>
                         <span class="quick-ops-kbd"><kbd>/</kbd></span>
-                    </div>
-                    <!-- Emergency Outage Simulation Trigger Button -->
-                    <div class="quick-ops-actions">
-                        <button type="button" class="btn btn-emergency-pulse" id="btn-trigger-emergency" onclick="triggerRandomEmergency(event)" title="Simulate a live grid emergency outage fault with automatic crew dispatch recommendations">
-                            <span class="pulse-warning-dot"></span>
-                            <span>Simulate Fault</span>
-                        </button>
                     </div>
                     <div class="quick-ops-live-tags">
                         <span class="pill-chip chip-blue" title="Monitored Feeders"><span class="chip-dot"></span> 18 Substations</span>
@@ -939,6 +934,70 @@
                 </div>
             </section>
 
+            <!-- 8. Developer & Testing Console (Admin Only) -->
+            <section id="view-developer" class="view-panel admin-only">
+                <div class="panel-head">
+                    <h2>Developer &amp; Testing Console <span class="info-tip" data-tooltip="Grid fault injection simulator, stress diagnostics, and system testing controls restricted to Administrators">i</span></h2>
+                    <span class="tag tag-admin">ADMINISTRATOR ACCESS ONLY</span>
+                </div>
+
+                <div class="two-col">
+                    <!-- Left: Emergency Fault Injection & Simulation -->
+                    <div class="card">
+                        <div class="card-head">
+                            <h3>Emergency Grid Simulator</h3>
+                            <span class="badge-rail">TEST HARNESS</span>
+                        </div>
+                        <p class="section-desc" style="color: var(--text-secondary); margin-bottom: 16px; font-size: 12.5px; line-height: 1.5;">
+                            Authorized Administrators can simulate live grid emergency faults (busbar arc flashes, primary transformer core thermal overload, underground feeder cable severance) to stress-test automated dispatching and protective relay telemetry, and resolve/clear emergency status.
+                        </p>
+                        <div class="emergency-sim-controls" style="display: flex; flex-direction: column; gap: 12px;">
+                            <div class="sim-action-row" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-emergency-pulse" id="btn-trigger-emergency" onclick="triggerRandomEmergency(event)" title="Simulate a live grid emergency outage fault with automatic crew dispatch recommendations">
+                                    <span class="pulse-warning-dot"></span>
+                                    <span>Simulate Emergency Fault</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btn-clear-emergency" onclick="clearActiveEmergency(event)" title="Resolve all active emergency outages and normalize transformer telemetry">
+                                    <span>Clear &amp; Normalize Grid</span>
+                                </button>
+                            </div>
+                            <div id="sim-status-banner" class="sim-status-banner" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); padding: 10px 14px; border-radius: 6px; font-size: 12px; color: var(--text-muted);">
+                                Status: Ready for test simulation. Dispatches, telemetry alerts, and SCADA relays will respond in real time.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: System Diagnostics & Health Check -->
+                    <div class="card">
+                        <div class="card-head">
+                            <h3>System Health &amp; Diagnostics</h3>
+                            <span class="notif-live-tag">SCADA ENGINE</span>
+                        </div>
+                        <div class="diag-stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                            <div class="diag-stat-cell" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); padding: 10px 12px; border-radius: 6px;">
+                                <span class="meta-label">TELEMETRY STREAM:</span>
+                                <strong class="meta-val" style="display: block; color: var(--status-normal);">SSE CONNECTED (1s)</strong>
+                            </div>
+                            <div class="diag-stat-cell" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); padding: 10px 12px; border-radius: 6px;">
+                                <span class="meta-label">DATABASE ENGINE:</span>
+                                <strong class="meta-val" style="display: block; color: var(--text-primary);">SQLITE 3 (ACID)</strong>
+                            </div>
+                            <div class="diag-stat-cell" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); padding: 10px 12px; border-radius: 6px;">
+                                <span class="meta-label">DISPATCH ROUTING:</span>
+                                <strong class="meta-val" style="display: block; color: var(--accent);">HAVERSINE PROXIMITY</strong>
+                            </div>
+                            <div class="diag-stat-cell" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); padding: 10px 12px; border-radius: 6px;">
+                                <span class="meta-label">ROLE RESTRICTION:</span>
+                                <strong class="meta-val" style="display: block; color: #A78BFA;">ADMINISTRATOR ONLY</strong>
+                            </div>
+                        </div>
+                        <div class="diag-actions" style="display: flex; gap: 8px;">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="showToast('System diagnostics healthy: 30 substations nominal', 'success');">Run Diagnostic Ping</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </main>
 
         <!-- Bottom Most Global Copyright Line & Compliance Footer with Integrated Version -->
@@ -947,7 +1006,7 @@
                 <div class="footer-left">
                     <span class="copyright-mark">&copy; 2026 Voltera Power Grid Operations</span>
                     <span class="footer-sep">&bull;</span>
-                    <span class="footer-version-tag">Version 1.1.0</span>
+                    <span class="footer-version-tag">Version 1.2.0</span>
                     <span class="footer-sep">&bull;</span>
                     <span class="footer-org">Madhyanchal Vidyut Vitaran Nigam Ltd. (MVVNL) / UPPCL</span>
                     <span class="footer-sep">&bull;</span>

@@ -406,11 +406,12 @@ const ROLE_CONFIG = {
             'view-facilities',
             'view-citizen',
             'view-crew-terminal',
-            'view-users'
+            'view-users',
+            'view-developer'
         ],
-        bannerIcon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
-        bannerHeadline: 'System Administrator Console - Full Grid Control',
-        bannerMessage: 'Unrestricted administrative authority across 33/11kV telemetry, SCADA grid controls, emergency crew dispatching, and user security administration.'
+        bannerIcon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
+        bannerHeadline: 'Administrator Mode &bull; Full Grid Authority',
+        bannerMessage: 'Unrestricted control across 33/11kV telemetry, SCADA systems, crew dispatches, and user management.'
     },
     OPERATOR: {
         role: 'OPERATOR',
@@ -426,9 +427,9 @@ const ROLE_CONFIG = {
             'view-citizen',
             'view-crew-terminal'
         ],
-        bannerIcon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>',
-        bannerHeadline: 'Grid Operations Center - Operational Access',
-        bannerMessage: 'Full operational monitoring of substation feeder telemetry, fault isolation, and emergency squad dispatching. (System user account administration is restricted to Administrators).'
+        bannerIcon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>',
+        bannerHeadline: 'Grid Operations Mode &bull; Real-Time Telemetry',
+        bannerMessage: 'Real-time feeder monitoring, automated fault triage, and field squad dispatch authorization.'
     },
     CREW: {
         role: 'CREW',
@@ -441,9 +442,9 @@ const ROLE_CONFIG = {
             'view-incidents',
             'view-overview'
         ],
-        bannerIcon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>',
-        bannerHeadline: 'Field Response Operations - Tactical Work Orders',
-        bannerMessage: 'Direct tactical access to your assigned dispatch orders, turn-by-turn road route navigation, GPS telemetry, squad roster, and assigned work orders. (Substation high-voltage busbar switching and administrative settings are restricted).'
+        bannerIcon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>',
+        bannerHeadline: 'Field Crew Mode &bull; Tactical Work Orders',
+        bannerMessage: 'Assigned incidents, turn-by-turn road routes, GPS tracking, and repair status reporting.'
     },
     CONSUMER: {
         role: 'CONSUMER',
@@ -454,9 +455,9 @@ const ROLE_CONFIG = {
             'view-citizen',
             'view-overview'
         ],
-        bannerIcon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
-        bannerHeadline: 'Citizen Public Grid Portal - Public Information',
-        bannerMessage: 'Public outage docket reporting desk, token tracking, and Lucknow district supply overview map. (Internal substation switching telemetry, engineering dispatch consoles, and technician radios are restricted).'
+        bannerIcon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+        bannerHeadline: 'Citizen Public Grid Portal &bull; Lucknow Status',
+        bannerMessage: 'Outage docket reporting, restoration status tracking, and feeder supply overview.'
     }
 };
 
@@ -1206,6 +1207,21 @@ function applyRoleBasedAccess(user) {
             btn.classList.add('hidden');
         }
     });
+
+    // 2b. Strictly synchronize admin-only elements (Developer section, Admin tabs)
+    document.querySelectorAll('.admin-only').forEach(el => {
+        if (role === 'ADMIN') {
+            el.classList.remove('hidden');
+        } else {
+            el.classList.add('hidden');
+        }
+    });
+
+    // 2c. If current panel is not permitted for the active role, route back to default
+    const currentActivePanel = document.querySelector('.view-panel.active');
+    if (currentActivePanel && !config.allowedViews.includes(currentActivePanel.id)) {
+        switchView(config.defaultView);
+    }
 
     // 3. Header badges and profile menu role info
     const roleBadge = document.getElementById('user-role-badge');
@@ -3241,7 +3257,24 @@ window.toggleNotificationCenter = function(e) {
         menu.classList.remove('hidden');
         if (trigger) trigger.setAttribute('aria-expanded', 'true');
 
-        // Opening the notification bell marks current notifications as viewed
+        // Opening notification center marks all currently active alerts as seen & read
+        (state.incidents || []).forEach(inc => {
+            const idKey = inc.incident_code || String(inc.id);
+            state.readNotificationIds.add(idKey);
+        });
+        (state.randomScadaNotices || []).forEach(n => {
+            state.readNotificationIds.add(n.id);
+        });
+        if (state.activeCrewDispatch && state.activeCrewDispatch.incident) {
+            state.readNotificationIds.add(`crew-${state.activeCrewDispatch.incident.incident_code || state.activeCrewDispatch.incident.id}`);
+        }
+        state.readNotificationIds.add('crew-directive');
+        state.readNotificationIds.add('consumer-advisory');
+
+        try {
+            localStorage.setItem('voltera_read_notifs', JSON.stringify(Array.from(state.readNotificationIds)));
+        } catch(err) {}
+
         state.notificationsViewed = true;
         const badgeEl = document.getElementById('header-alert-count');
         if (badgeEl) {
@@ -3285,6 +3318,9 @@ window.markAllNotificationsAsRead = function(e) {
     (state.randomScadaNotices || []).forEach(n => {
         state.readNotificationIds.add(n.id);
     });
+    if (state.activeCrewDispatch && state.activeCrewDispatch.incident) {
+        state.readNotificationIds.add(`crew-${state.activeCrewDispatch.incident.incident_code || state.activeCrewDispatch.incident.id}`);
+    }
     state.readNotificationIds.add('crew-directive');
     state.readNotificationIds.add('consumer-advisory');
 
@@ -3304,6 +3340,22 @@ window.markAllNotificationsAsRead = function(e) {
 
     renderNotificationCenter();
     showToast('All notifications marked as read', 'success');
+};
+
+// Interactive item click: marks this item read and navigates
+window.handleNotificationClick = function(idKey, targetView) {
+    sound.play('click');
+    if (idKey) {
+        state.readNotificationIds.add(idKey);
+        try {
+            localStorage.setItem('voltera_read_notifs', JSON.stringify(Array.from(state.readNotificationIds)));
+        } catch(err) {}
+    }
+    closeNotificationCenter();
+    renderNotificationCenter();
+    if (targetView) {
+        switchView(targetView);
+    }
 };
 
 function renderNotificationCenter() {
@@ -3330,7 +3382,7 @@ function renderNotificationCenter() {
             const dist = activeDisp.route ? `${activeDisp.route.distance_km} km` : '1.4 km';
             const eta = activeDisp.route ? `${activeDisp.route.eta_minutes} min` : '10 min';
             notifItems.push(`
-                <div class="notif-card card-crit ${isRead ? 'read' : ''}" onclick="switchView('view-crew-terminal'); closeNotificationCenter();">
+                <div class="notif-card card-crit ${isRead ? 'read' : ''}" onclick="handleNotificationClick('${escapeHtml(key)}', 'view-crew-terminal');">
                     <div class="notif-card-top">
                         <span class="notif-card-tag" style="color: var(--status-critical);">ACTIVE DIRECTIVE</span>
                         ${isRead ? '<span class="notif-read-check">READ</span>' : '<span class="notif-card-time">LIVE</span>'}
@@ -3341,7 +3393,7 @@ function renderNotificationCenter() {
             `);
         } else {
             notifItems.push(`
-                <div class="notif-card card-info read" onclick="switchView('view-crew-terminal'); closeNotificationCenter();">
+                <div class="notif-card card-info read" onclick="handleNotificationClick(null, 'view-crew-terminal');">
                     <div class="notif-card-top">
                         <span class="notif-card-tag" style="color: var(--status-normal);">STATUS: STANDBY</span>
                         <span class="notif-card-time">Ready</span>
@@ -3352,7 +3404,7 @@ function renderNotificationCenter() {
             `);
         }
         if (footerWrap) {
-            footerWrap.innerHTML = `<button type="button" class="btn btn-primary btn-xs btn-full" onclick="switchView('view-crew-terminal'); closeNotificationCenter();">Open My Dispatch Terminal &rarr;</button>`;
+            footerWrap.innerHTML = `<button type="button" class="btn btn-primary btn-xs btn-full" onclick="handleNotificationClick(null, 'view-crew-terminal');">Open My Dispatch Terminal &rarr;</button>`;
         }
     } else if (role === 'ADMIN' || role === 'OPERATOR') {
         const activeIncidents = (state.incidents || []).filter(i => i.status !== 'RESOLVED');
@@ -3368,7 +3420,7 @@ function renderNotificationCenter() {
                 const sev = Math.round(inc.severity_score || 0);
                 const isCrit = sev >= 70;
                 notifItems.push(`
-                    <div class="notif-card ${isCrit ? 'card-crit' : 'card-warn'} ${isRead ? 'read' : ''}" onclick="switchView('view-incidents'); closeNotificationCenter();">
+                    <div class="notif-card ${isCrit ? 'card-crit' : 'card-warn'} ${isRead ? 'read' : ''}" onclick="handleNotificationClick('${escapeHtml(idKey)}', 'view-incidents');">
                         <div class="notif-card-top">
                             <span class="notif-card-tag" style="color: ${isCrit ? 'var(--status-critical)' : 'var(--status-warning)'};">${isCrit ? 'CRITICAL OUTAGE' : 'GRID ALERT'}</span>
                             ${isRead ? '<span class="notif-read-check">READ</span>' : `<span class="notif-card-time">Sev ${sev}/100</span>`}
@@ -3386,7 +3438,7 @@ function renderNotificationCenter() {
             if (!isRead) unreadCount++;
 
             notifItems.push(`
-                <div class="notif-card ${notice.level === 'warn' ? 'card-warn' : 'card-info'} ${isRead ? 'read' : ''}">
+                <div class="notif-card ${notice.level === 'warn' ? 'card-warn' : 'card-info'} ${isRead ? 'read' : ''}" onclick="handleNotificationClick('${escapeHtml(notice.id)}', null);">
                     <div class="notif-card-top">
                         <span class="notif-card-tag" style="color: ${notice.level === 'warn' ? 'var(--status-warning)' : 'var(--accent)'};">${escapeHtml(notice.tag)}</span>
                         ${isRead ? '<span class="notif-read-check">READ</span>' : `<span class="notif-card-time">${escapeHtml(notice.time)}</span>`}
@@ -3400,7 +3452,7 @@ function renderNotificationCenter() {
         const deployedCrews = (state.crews || []).filter(c => c.status !== 'AVAILABLE');
         if (deployedCrews.length > 0) {
             notifItems.push(`
-                <div class="notif-card card-info read" onclick="switchView('view-fleet'); closeNotificationCenter();">
+                <div class="notif-card card-info read" onclick="handleNotificationClick(null, 'view-fleet');">
                     <div class="notif-card-top">
                         <span class="notif-card-tag" style="color: var(--accent);">FIELD RESPONSE FLEET</span>
                         <span class="notif-card-time">${deployedCrews.length} Active</span>
@@ -3416,7 +3468,7 @@ function renderNotificationCenter() {
         }
 
         if (footerWrap) {
-            footerWrap.innerHTML = `<button type="button" class="btn btn-secondary btn-xs btn-full" onclick="switchView('view-incidents'); closeNotificationCenter();">Review All Outages (${activeIncidents.length}) &rarr;</button>`;
+            footerWrap.innerHTML = `<button type="button" class="btn btn-secondary btn-xs btn-full" onclick="handleNotificationClick(null, 'view-incidents');">Review All Outages (${activeIncidents.length}) &rarr;</button>`;
         }
     } else {
         // Consumer / Guest
@@ -3425,7 +3477,7 @@ function renderNotificationCenter() {
 
         const activeCount = (state.incidents || []).filter(i => i.status !== 'RESOLVED').length;
         notifItems.push(`
-            <div class="notif-card card-info ${isAdvRead ? 'read' : ''}" onclick="switchView('view-citizen'); closeNotificationCenter();">
+            <div class="notif-card card-info ${isAdvRead ? 'read' : ''}" onclick="handleNotificationClick('consumer-advisory', 'view-citizen');">
                 <div class="notif-card-top">
                     <span class="notif-card-tag" style="color: var(--status-normal);">PUBLIC GRID ADVISORY</span>
                     ${isAdvRead ? '<span class="notif-read-check">READ</span>' : '<span class="notif-card-time">LIVE</span>'}
@@ -3433,7 +3485,7 @@ function renderNotificationCenter() {
                 <div class="notif-card-title">Lucknow Central Supply Network</div>
                 <div class="notif-card-desc">${activeCount > 0 ? `${activeCount} localized outage(s) currently being restored by field squads.` : 'All major feeder circuits in Lucknow operating normally.'}</div>
             </div>
-            <div class="notif-card card-info read" onclick="switchView('view-citizen'); closeNotificationCenter();">
+            <div class="notif-card card-info read" onclick="handleNotificationClick(null, 'view-citizen');">
                 <div class="notif-card-top">
                     <span class="notif-card-tag" style="color: #34D399;">CITIZEN DESK</span>
                     <span class="notif-card-time">24/7 Helpline</span>
@@ -3443,14 +3495,13 @@ function renderNotificationCenter() {
             </div>
         `);
         if (footerWrap) {
-            footerWrap.innerHTML = `<button type="button" class="btn btn-secondary btn-xs btn-full" onclick="switchView('view-citizen'); closeNotificationCenter();">Open Citizen Outage Desk &rarr;</button>`;
+            footerWrap.innerHTML = `<button type="button" class="btn btn-secondary btn-xs btn-full" onclick="handleNotificationClick(null, 'view-citizen');">Open Citizen Outage Desk &rarr;</button>`;
         }
     }
 
     listEl.innerHTML = notifItems.join('');
 
     // Notification Indicator Badge logic:
-    // If user has viewed notifications, indicator remains hidden until NEW alerts arrive
     if (badgeEl) {
         if (!state.notificationsViewed && unreadCount > 0) {
             badgeEl.textContent = String(unreadCount);
@@ -3493,10 +3544,16 @@ function setupNotificationCenter() {
 }
 
 // ==============================================================================
-// 9b. EMERGENCY FAULT SIMULATION & RANDOM SCADA ALERTS
+// 9b. EMERGENCY FAULT SIMULATION & RANDOM SCADA ALERTS (ADMIN ONLY)
 // ==============================================================================
 window.triggerRandomEmergency = async function(e) {
     if (e) e.stopPropagation();
+    if (state.user && state.user.role !== 'ADMIN') {
+        sound.play('alert');
+        showToast('Unauthorized: Emergency fault simulation is restricted to Administrators.', 'warning');
+        return;
+    }
+
     const btn = document.getElementById('btn-trigger-emergency');
     const origHTML = btn ? btn.innerHTML : '';
     if (btn) {
@@ -3512,21 +3569,29 @@ window.triggerRandomEmergency = async function(e) {
         });
         const data = await res.json();
         if (!res.ok) {
-            showToast(data.message || 'Emergency simulation failed. Operators or Admins only.', 'error');
+            showToast(data.message || 'Emergency simulation failed. Administrators only.', 'error');
             return;
         }
 
         // Play loud alert tone
         sound.play('alert');
-        state.notificationsViewed = false; // Reset viewed flag so notification bell lights up!
+        state.notificationsViewed = false; // Reset viewed flag so notification bell lights up for new alert!
 
         const tf = data.transformer;
         const inc = data.incident;
-        const cause = inc.root_cause_prediction || 'Feeder Trip';
+        const cause = inc ? (inc.root_cause_prediction || 'Feeder Trip') : (data.emergency_title || 'Emergency Trip');
         const subName = tf ? tf.substation_name : 'Substation';
-        const sev = Math.round(inc.severity_score || 90);
+        const sev = Math.round(data.severity || (inc ? inc.severity_score : 90));
 
         showToast(`CRITICAL EMERGENCY: ${subName} (${cause})! Severity ${sev}/100. Field Squad Alert dispatched!`, 'error');
+
+        // Update Developer status banner
+        const statusBanner = document.getElementById('sim-status-banner');
+        if (statusBanner) {
+            statusBanner.textContent = `Status: Active Emergency Injected at ${subName} (${cause}, Severity ${sev}/100). Auto-dispatched response teams.`;
+            statusBanner.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+            statusBanner.style.color = '#FCA5A5';
+        }
 
         // Reload data to reflect new incident, transformer status, and fleet updates
         await loadAllData(false);
@@ -3549,6 +3614,56 @@ window.triggerRandomEmergency = async function(e) {
 
     } catch (err) {
         showToast('Error connecting to emergency simulation service', 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+        }
+    }
+};
+
+window.clearActiveEmergency = async function(e) {
+    if (e) e.stopPropagation();
+    if (state.user && state.user.role !== 'ADMIN') {
+        sound.play('alert');
+        showToast('Unauthorized: Emergency fault resolution is restricted to Administrators.', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('btn-clear-emergency');
+    const origHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="pulse-warning-dot" style="background: var(--status-normal);"></span><span>Normalizing Grid...</span>`;
+    }
+    sound.play('click');
+
+    try {
+        const res = await fetch('/api/emergency/clear', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+            showToast(data.error || 'Failed to clear emergencies. Administrator role required.', 'error');
+            return;
+        }
+
+        sound.play('success');
+        showToast(data.message || 'All emergencies cleared. Grid normalized to nominal telemetry.', 'success');
+
+        const statusBanner = document.getElementById('sim-status-banner');
+        if (statusBanner) {
+            statusBanner.textContent = `Status: Grid normalized. ${data.resolved_incidents || 0} incidents resolved, ${data.normalized_substations || 0} substations restored to 230V normal status.`;
+            statusBanner.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            statusBanner.style.color = '#6EE7B7';
+        }
+
+        // Reload data to reflect resolved incidents and normal transformer statuses
+        await loadAllData(false);
+
+    } catch (err) {
+        showToast('Error communicating with emergency clear service', 'error');
     } finally {
         if (btn) {
             btn.disabled = false;
@@ -3606,6 +3721,10 @@ function setupSSEListener() {
                     state.notificationsViewed = false;
                     sound.play('alert');
                     showToast(`GRID EMERGENCY ALERT: ${data.substation_name || 'Substation'} (${data.cause || 'Fault'})`, 'error');
+                    loadAllData(true);
+                } else if (data.event === 'emergency_cleared') {
+                    sound.play('success');
+                    showToast('Grid Emergency Cleared by Administrator', 'info');
                     loadAllData(true);
                 }
             } catch(err) {}

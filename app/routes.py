@@ -185,13 +185,32 @@ def quick_switch():
     crew_id = data.get("crew_id")
     email = data.get("email")
 
+    # Privilege escalation defense: Administrative roles require proper credentialed authentication
+    if role in ("ADMIN", "OPERATOR"):
+        curr = get_current_user()
+        if not curr or curr.role != "ADMIN":
+            return jsonify({
+                "success": False,
+                "error": "Privilege escalation blocked. Administrative accounts require credentialed authentication.",
+                "code": "FORBIDDEN"
+            }), 403
+
     user = None
     if crew_id:
         crew = db.session.get(Crew, crew_id) if hasattr(db.session, "get") else Crew.query.get(crew_id)
         if crew and crew.leader:
             user = crew.leader
     elif email:
-        user = User.query.filter((User.email == email) | (User.email.ilike(email))).first()
+        target_candidate = User.query.filter((User.email == email) | (User.email.ilike(email))).first()
+        if target_candidate and target_candidate.role in ("ADMIN", "OPERATOR"):
+            curr = get_current_user()
+            if not curr or curr.role != "ADMIN":
+                return jsonify({
+                    "success": False,
+                    "error": "Privilege escalation blocked. Administrative accounts require credentialed authentication.",
+                    "code": "FORBIDDEN"
+                }), 403
+        user = target_candidate
     elif role == "ADMIN":
         user = User.query.filter_by(role="ADMIN").first()
     elif role == "OPERATOR":
@@ -471,6 +490,68 @@ def simulate_random_emergency():
         "severity": sev,
         "description": desc,
         "incident": new_inc.to_dict() if new_inc else None
+    })
+
+@api_bp.route("/emergency/clear", methods=["POST"])
+@role_required("ADMIN")
+def clear_simulated_emergencies():
+    now = _utc_now()
+    active_incidents = Incident.query.filter(Incident.status != "RESOLVED").all()
+    resolved_count = 0
+    for inc in active_incidents:
+        inc.status = "RESOLVED"
+        inc.resolved_at = now
+        resolved_count += 1
+        for d in inc.dispatches:
+            if not d.resolved_at:
+                d.resolved_at = now
+                if d.crew:
+                    d.crew.status = "AVAILABLE"
+                    d.crew.active_workload = 0
+
+    critical_tfs = Transformer.query.filter_by(status="CRITICAL").all()
+    for tf in critical_tfs:
+        tf.status = "NORMAL"
+        tf.temperature_c = 65.0
+        tf.voltage_v = 230.0
+        tf.load_pct = 58.0
+        tf.failure_probability = 0.04
+        tf.oil_level_pct = 85.0
+        tf.last_updated = now
+
+    for tf in Transformer.query.filter(Transformer.status == "WARNING").all():
+        tf.status = "NORMAL"
+        tf.temperature_c = 65.0
+        tf.voltage_v = 230.0
+        tf.load_pct = 55.0
+        tf.failure_probability = 0.04
+        tf.last_updated = now
+
+    db.session.commit()
+
+    try:
+        create_cross_device_message(
+            incident_id=None,
+            sender_role="ADMIN",
+            sender_name="LESA Grid Administrator",
+            target_role="ALL",
+            channel="SYSTEM",
+            message_body="[GRID NORMALIZED] Emergency state cleared by Administrator. All 33/11kV substations normalized."
+        )
+    except Exception as e:
+        current_app.logger.warning(f"Failed to create clear message: {e}")
+
+    broadcast_event("emergency_cleared", {
+        "success": True,
+        "resolved_incidents_count": resolved_count,
+        "normalized_substations_count": len(critical_tfs)
+    })
+
+    return jsonify({
+        "success": True,
+        "message": "All emergency outages resolved and grid telemetry normalized.",
+        "resolved_incidents": resolved_count,
+        "normalized_substations": len(critical_tfs)
     })
 
 @api_bp.route("/incidents", methods=["GET"])

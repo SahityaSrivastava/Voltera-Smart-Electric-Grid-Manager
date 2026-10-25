@@ -30,7 +30,8 @@ def get_secret(key: str, default: str = "") -> str:
 
 class Config:
     """Production and Development Configuration with Azure & Local Fallbacks."""
-    SECRET_KEY = get_secret("SECRET_KEY", "lko-smart-grid-secret-key-prod-2026-uppcl-lesa")
+    _configured_secret = get_secret("SECRET_KEY", "")
+    SECRET_KEY = _configured_secret if _configured_secret else "lko-smart-grid-secret-key-prod-2026-uppcl-lesa"
     raw_db = get_secret("DATABASE_URL", "sqlite:///powergrid_lucknow.db")
     if raw_db.startswith("sqlite:///"):
         db_file = raw_db.replace("sqlite:///", "")
@@ -57,7 +58,7 @@ class Config:
 
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Strict"
-    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").lower() in ("true", "1")
     PERMANENT_SESSION_LIFETIME = 14400
 
 

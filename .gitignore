@@ -1,0 +1,28 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+
+# SQLite Databases & Storage
+*.db
+*.db-journal
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local file uploads
+uploads/*
+!uploads/.gitkeep
+
+# Operating system metadata
+.DS_Store
+Thumbs.db

@@ -7,15 +7,18 @@ from app.models import (
 )
 from app.services import train_model, hash_identifier, cloak_coordinates
 
-def seed_database(force_reset=True):
+def seed_database(force_reset=False):
     app = create_app()
     with app.app_context():
         print("[Voltera] Initializing database...")
         if not force_reset and PowerGridRegion.query.first() and User.query.filter_by(email="admin@lesa.up.gov.in").first():
-            print(f"[Voltera ML] Model ready: {train_model()}")
+            print(f"[Voltera ML] Database records verified intact. Model ready: {train_model()}")
             return
 
-        db.drop_all()
+        if force_reset:
+            print("[Voltera] Explicit force_reset requested: recreating schema...")
+            db.drop_all()
+
         db.create_all()
 
         # 1. Base Users
