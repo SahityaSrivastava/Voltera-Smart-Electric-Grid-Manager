@@ -284,14 +284,14 @@ const LUCKNOW_ROAD_CORRIDORS = [
 
 // Vital Facilities & Priority Infrastructure Landmarks
 const VITAL_FACILITY_LANDMARKS = [
-    { name: 'SGPGI Hospital', type: 'hospital', icon: '+', lat: 26.7450, lng: 80.9380 },
-    { name: 'KGMU Trauma Center', type: 'hospital', icon: '+', lat: 26.8650, lng: 80.9150 },
-    { name: 'Dr RMLIMS Hospital', type: 'hospital', icon: '+', lat: 26.8600, lng: 81.0020 },
-    { name: 'Charbagh Railway Station', type: 'transit', icon: '🚆', lat: 26.8285, lng: 80.9200 },
-    { name: 'CCS Int Airport (Amausi)', type: 'airport', icon: '✈', lat: 26.7606, lng: 80.8893 },
-    { name: 'UP Vidhan Sabha', type: 'gov', icon: '🏛️', lat: 26.8460, lng: 80.9420 },
-    { name: 'Aishbagh Water Works', type: 'water', icon: '💧', lat: 26.8370, lng: 80.9150 },
-    { name: 'Ekana Int Stadium', type: 'civic', icon: '🏟️', lat: 26.8120, lng: 81.0150 }
+    { name: 'SGPGI Hospital', type: 'hospital', icon: 'H', lat: 26.7450, lng: 80.9380 },
+    { name: 'KGMU Trauma Center', type: 'hospital', icon: 'H', lat: 26.8650, lng: 80.9150 },
+    { name: 'Dr RMLIMS Hospital', type: 'hospital', icon: 'H', lat: 26.8600, lng: 81.0020 },
+    { name: 'Charbagh Railway Station', type: 'transit', icon: 'T', lat: 26.8285, lng: 80.9200 },
+    { name: 'CCS Int Airport (Amausi)', type: 'airport', icon: 'A', lat: 26.7606, lng: 80.8893 },
+    { name: 'UP Vidhan Sabha', type: 'gov', icon: 'G', lat: 26.8460, lng: 80.9420 },
+    { name: 'Aishbagh Water Works', type: 'water', icon: 'W', lat: 26.8370, lng: 80.9150 },
+    { name: 'Ekana Int Stadium', type: 'civic', icon: 'S', lat: 26.8120, lng: 81.0150 }
 ];
 
 // Lucknow Locality Geocodes for Citizen Reports
@@ -562,11 +562,19 @@ window.scheduleMapRender = function() {
 let mapAnimationLoopId = null;
 function startMapAnimationLoop() {
     if (mapAnimationLoopId) return;
-    function animate() {
+    let lastFrameTime = 0;
+    const TARGET_FPS = 30; // 30 FPS provides fluid animation while slashing GPU/CPU usage
+    const FRAME_TIME = 1000 / TARGET_FPS;
+
+    function animate(now) {
         const overviewEl = document.getElementById('view-overview');
-        const isOverviewVisible = overviewEl && !overviewEl.classList.contains('hidden');
-        if (isOverviewVisible && !document.hidden && state.map.canvas && state.map.ctx) {
-            renderGISMap();
+        const isOverviewVisible = overviewEl && overviewEl.classList.contains('active') && !document.hidden;
+
+        if (isOverviewVisible && state.map.canvas && state.map.ctx) {
+            if (now - lastFrameTime >= FRAME_TIME) {
+                lastFrameTime = now;
+                renderGISMap();
+            }
         }
         mapAnimationLoopId = requestAnimationFrame(animate);
     }
@@ -766,24 +774,30 @@ function setupAudioToggle() {
 function setupUserProfileMenu() {
     const trigger = document.getElementById('user-profile-btn');
     const menu = document.getElementById('user-profile-menu');
+    const mobMoreBtn = document.getElementById('mob-btn-more');
     if (!trigger || !menu) return;
 
     trigger.addEventListener('click', (e) => {
         e.stopPropagation();
         const isHidden = menu.classList.contains('hidden');
         if (isHidden) {
-            openProfileMenu();
+            openProfileMenu('top');
         } else {
             closeProfileMenu();
         }
     });
 
-    // Close when clicking anywhere outside
-    document.addEventListener('click', (e) => {
-        if (!menu.contains(e.target) && !trigger.contains(e.target)) {
+    // Close when clicking or tapping anywhere outside
+    const handleOutsideProfile = (e) => {
+        if (!menu.classList.contains('hidden') && 
+            !menu.contains(e.target) && 
+            !trigger.contains(e.target) && 
+            (!mobMoreBtn || !mobMoreBtn.contains(e.target))) {
             closeProfileMenu();
         }
-    });
+    };
+    document.addEventListener('click', handleOutsideProfile);
+    document.addEventListener('touchstart', handleOutsideProfile, { passive: true });
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
@@ -793,17 +807,17 @@ function setupUserProfileMenu() {
     });
 }
 
-function openProfileMenu() {
+function openProfileMenu(origin = 'top') {
     const trigger = document.getElementById('user-profile-btn');
     const menu = document.getElementById('user-profile-menu');
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
     closeNotificationCenter();
     if (menu) {
-        menu.classList.remove('hidden');
-        if (window.innerWidth <= 768) {
-            menu.classList.add('bottom-sheet-mode');
-            if (backdrop) backdrop.classList.remove('hidden');
+        if (origin === 'bottom') {
+            menu.setAttribute('data-origin', 'bottom');
+        } else {
+            menu.removeAttribute('data-origin');
         }
+        menu.classList.remove('hidden');
         sound.play('click');
     }
     if (trigger) trigger.setAttribute('aria-expanded', 'true');
@@ -812,17 +826,11 @@ function openProfileMenu() {
 function closeProfileMenu() {
     const trigger = document.getElementById('user-profile-btn');
     const menu = document.getElementById('user-profile-menu');
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
     if (menu && !menu.classList.contains('hidden')) {
         menu.classList.add('hidden');
-        menu.classList.remove('bottom-sheet-mode');
+        menu.removeAttribute('data-origin');
     }
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
-    const notifMenu = document.getElementById('notification-center-menu');
-    const isNotifOpen = notifMenu && !notifMenu.classList.contains('hidden');
-    if (!isNotifOpen && backdrop) {
-        backdrop.classList.add('hidden');
-    }
 }
 
 window.toggleUserProfileMenu = function(e) {
@@ -833,7 +841,7 @@ window.toggleUserProfileMenu = function(e) {
     const menu = document.getElementById('user-profile-menu');
     if (!menu) return;
     if (menu.classList.contains('hidden')) {
-        openProfileMenu();
+        openProfileMenu('bottom');
     } else {
         closeProfileMenu();
     }
@@ -1958,8 +1966,8 @@ function drawVitalFacilities(ctx, isLight) {
         ctx.fill();
 
         // Text label with icon tag
-        const labelText = `${fac.icon} ${fac.name}`;
-        ctx.font = '600 9.5px Segoe UI, Roboto, Arial, sans-serif';
+        const labelText = `[${fac.icon}] ${fac.name}`;
+        ctx.font = '600 9.5px Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
         const tw = ctx.measureText(labelText).width;
 
         ctx.fillStyle = bgBox;
@@ -3225,17 +3233,12 @@ window.toggleNotificationCenter = function(e) {
     sound.play('click');
     const menu = document.getElementById('notification-center-menu');
     const trigger = document.getElementById('btn-notification-trigger');
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
     if (!menu) return;
 
     closeProfileMenu();
     const willOpen = menu.classList.contains('hidden');
     if (willOpen) {
         menu.classList.remove('hidden');
-        if (window.innerWidth <= 768) {
-            menu.classList.add('bottom-sheet-mode');
-            if (backdrop) backdrop.classList.remove('hidden');
-        }
         if (trigger) trigger.setAttribute('aria-expanded', 'true');
 
         // Opening the notification bell marks current notifications as viewed
@@ -3249,8 +3252,6 @@ window.toggleNotificationCenter = function(e) {
         renderNotificationCenter();
     } else {
         menu.classList.add('hidden');
-        menu.classList.remove('bottom-sheet-mode');
-        if (backdrop) backdrop.classList.add('hidden');
         if (trigger) trigger.setAttribute('aria-expanded', 'false');
     }
 };
@@ -3258,17 +3259,10 @@ window.toggleNotificationCenter = function(e) {
 window.closeNotificationCenter = function() {
     const menu = document.getElementById('notification-center-menu');
     const trigger = document.getElementById('btn-notification-trigger');
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
     if (menu) {
         menu.classList.add('hidden');
-        menu.classList.remove('bottom-sheet-mode');
     }
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
-    const profileMenu = document.getElementById('user-profile-menu');
-    const isProfileOpen = profileMenu && !profileMenu.classList.contains('hidden');
-    if (!isProfileOpen && backdrop) {
-        backdrop.classList.add('hidden');
-    }
 };
 
 window.refreshNotifications = function(e) {
@@ -3278,7 +3272,7 @@ window.refreshNotifications = function(e) {
     showToast('Notifications refreshed', 'success');
 };
 
-// "✓ Mark All Read" Action
+// "Mark All Read" Action
 window.markAllNotificationsAsRead = function(e) {
     if (e) e.stopPropagation();
     sound.play('click');
@@ -3339,7 +3333,7 @@ function renderNotificationCenter() {
                 <div class="notif-card card-crit ${isRead ? 'read' : ''}" onclick="switchView('view-crew-terminal'); closeNotificationCenter();">
                     <div class="notif-card-top">
                         <span class="notif-card-tag" style="color: var(--status-critical);">ACTIVE DIRECTIVE</span>
-                        ${isRead ? '<span class="notif-read-check">✓ READ</span>' : '<span class="notif-card-time">LIVE</span>'}
+                        ${isRead ? '<span class="notif-read-check">READ</span>' : '<span class="notif-card-time">LIVE</span>'}
                     </div>
                     <div class="notif-card-title">${escapeHtml(activeDisp.incident.incident_code || 'INC-ORDER')} &mdash; ${escapeHtml(subName)}</div>
                     <div class="notif-card-desc">Transit Distance: ${dist} &bull; Estimated ETA: ${eta}. Turn-by-turn route ready.</div>
@@ -3377,7 +3371,7 @@ function renderNotificationCenter() {
                     <div class="notif-card ${isCrit ? 'card-crit' : 'card-warn'} ${isRead ? 'read' : ''}" onclick="switchView('view-incidents'); closeNotificationCenter();">
                         <div class="notif-card-top">
                             <span class="notif-card-tag" style="color: ${isCrit ? 'var(--status-critical)' : 'var(--status-warning)'};">${isCrit ? 'CRITICAL OUTAGE' : 'GRID ALERT'}</span>
-                            ${isRead ? '<span class="notif-read-check">✓ READ</span>' : `<span class="notif-card-time">Sev ${sev}/100</span>`}
+                            ${isRead ? '<span class="notif-read-check">READ</span>' : `<span class="notif-card-time">Sev ${sev}/100</span>`}
                         </div>
                         <div class="notif-card-title">${escapeHtml(inc.incident_code || 'ALERT')} &bull; ${escapeHtml(subName)}</div>
                         <div class="notif-card-desc">${escapeHtml(inc.root_cause_prediction || 'Feeder Trip')} &bull; Status: ${escapeHtml(inc.status)}</div>
@@ -3395,7 +3389,7 @@ function renderNotificationCenter() {
                 <div class="notif-card ${notice.level === 'warn' ? 'card-warn' : 'card-info'} ${isRead ? 'read' : ''}">
                     <div class="notif-card-top">
                         <span class="notif-card-tag" style="color: ${notice.level === 'warn' ? 'var(--status-warning)' : 'var(--accent)'};">${escapeHtml(notice.tag)}</span>
-                        ${isRead ? '<span class="notif-read-check">✓ READ</span>' : `<span class="notif-card-time">${escapeHtml(notice.time)}</span>`}
+                        ${isRead ? '<span class="notif-read-check">READ</span>' : `<span class="notif-card-time">${escapeHtml(notice.time)}</span>`}
                     </div>
                     <div class="notif-card-title">${escapeHtml(notice.title)}</div>
                     <div class="notif-card-desc">${escapeHtml(notice.text)}</div>
@@ -3434,7 +3428,7 @@ function renderNotificationCenter() {
             <div class="notif-card card-info ${isAdvRead ? 'read' : ''}" onclick="switchView('view-citizen'); closeNotificationCenter();">
                 <div class="notif-card-top">
                     <span class="notif-card-tag" style="color: var(--status-normal);">PUBLIC GRID ADVISORY</span>
-                    ${isAdvRead ? '<span class="notif-read-check">✓ READ</span>' : '<span class="notif-card-time">LIVE</span>'}
+                    ${isAdvRead ? '<span class="notif-read-check">READ</span>' : '<span class="notif-card-time">LIVE</span>'}
                 </div>
                 <div class="notif-card-title">Lucknow Central Supply Network</div>
                 <div class="notif-card-desc">${activeCount > 0 ? `${activeCount} localized outage(s) currently being restored by field squads.` : 'All major feeder circuits in Lucknow operating normally.'}</div>
@@ -3481,12 +3475,14 @@ function setupNotificationCenter() {
     const menu = document.getElementById('notification-center-menu');
     if (!trigger || !menu) return;
 
-    // Close when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!menu.contains(e.target) && !trigger.contains(e.target)) {
+    // Close when clicking or tapping outside
+    const handleOutsideNotif = (e) => {
+        if (!menu.classList.contains('hidden') && !menu.contains(e.target) && !trigger.contains(e.target)) {
             closeNotificationCenter();
         }
-    });
+    };
+    document.addEventListener('click', handleOutsideNotif);
+    document.addEventListener('touchstart', handleOutsideNotif, { passive: true });
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
@@ -3505,7 +3501,7 @@ window.triggerRandomEmergency = async function(e) {
     const origHTML = btn ? btn.innerHTML : '';
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<span class="pulse-warning-dot"></span><span>⚡ Simulating Outage...</span>`;
+        btn.innerHTML = `<span class="pulse-warning-dot"></span><span>Simulating Outage...</span>`;
     }
     sound.play('click');
 
@@ -3530,7 +3526,7 @@ window.triggerRandomEmergency = async function(e) {
         const subName = tf ? tf.substation_name : 'Substation';
         const sev = Math.round(inc.severity_score || 90);
 
-        showToast(`🚨 CRITICAL EMERGENCY: ${subName} (${cause})! Severity ${sev}/100. Field Squad Alert dispatched!`, 'error');
+        showToast(`CRITICAL EMERGENCY: ${subName} (${cause})! Severity ${sev}/100. Field Squad Alert dispatched!`, 'error');
 
         // Reload data to reflect new incident, transformer status, and fleet updates
         await loadAllData(false);
@@ -3609,7 +3605,7 @@ function setupSSEListener() {
                 if (data.event === 'emergency_simulated') {
                     state.notificationsViewed = false;
                     sound.play('alert');
-                    showToast(`⚡ GRID EMERGENCY ALERT: ${data.substation_name || 'Substation'} (${data.cause || 'Fault'})`, 'error');
+                    showToast(`GRID EMERGENCY ALERT: ${data.substation_name || 'Substation'} (${data.cause || 'Fault'})`, 'error');
                     loadAllData(true);
                 }
             } catch(err) {}
@@ -3677,8 +3673,6 @@ window.closeAllMobileSheets = function() {
     closeProfileMenu();
     const searchBar = document.getElementById('mobile-search-bar');
     if (searchBar) searchBar.classList.add('hidden');
-    const backdrop = document.getElementById('mobile-sheet-backdrop');
-    if (backdrop) backdrop.classList.add('hidden');
 };
 
 async function checkActiveCrewAlerts() {

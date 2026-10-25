@@ -355,7 +355,7 @@ class PowerGridLucknowTestCase(unittest.TestCase):
         # 2. Bottom copyright line with integrated Version in main website and login screen
         self.assertIn('app-global-footer', html)
         self.assertIn('login-copyright-line', html)
-        self.assertIn('Version 1.0.2', html)
+        self.assertIn('Version 1.1.0', html)
         self.assertIn('footer-version-tag', html)
         self.assertIn('Madhyanchal Vidyut Vitaran Nigam Ltd. (MVVNL) / UPPCL', html)
         self.assertIn('All Rights Reserved.', html)
@@ -477,9 +477,17 @@ class PowerGridLucknowTestCase(unittest.TestCase):
         self.assertIn('id="mobile-sheet-backdrop"', html)
         self.assertIn('id="chip-layer-flow"', html)
         self.assertIn('id="chip-layer-facilities"', html)
-        self.assertIn('id="chip-layer-roads"', html)
-        self.assertIn('id="btn-mob-map-expand"', html)
-        self.assertIn('id="mob-map-gesture-hint"', html)
+        self.assertIn('id="dropdown-nav-shortcuts"', html)
+        self.assertIn('data-target-view="view-incidents"', html)
+        self.assertIn('data-target-view="view-substations"', html)
+        self.assertIn('data-target-view="view-facilities"', html)
+
+        # 5. Check CSS ensures mobile backdrop blur is removed and disabled
+        css_res = self.client.get('/static/css/style.css')
+        self.assertEqual(css_res.status_code, 200)
+        css_text = css_res.get_data(as_text=True)
+        self.assertIn('.mobile-sheet-backdrop {\n    display: none !important;', css_text)
+        self.assertNotIn('.mobile-sheet-backdrop {\n    position: fixed;\n    inset: 0;\n    background: rgba(0, 0, 0, 0.65);\n    backdrop-filter: blur(4px);', css_text)
 
 if __name__ == '__main__':
     unittest.main()

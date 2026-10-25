@@ -48,7 +48,7 @@
     --radius-lg: 14px;
     --radius-xl: 16px;
 
-    --font: 'IBM Plex Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-mono: 'IBM Plex Mono', 'JetBrains Mono', 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
     --shadow-card: none;
     --shadow-floating: none;
@@ -701,7 +701,7 @@ h1, h2, h3, h4 {
     justify-content: center;
     gap: 6px;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
     flex-shrink: 0;
     line-height: 1;
@@ -711,6 +711,10 @@ h1, h2, h3, h4 {
 .nav-btn:hover {
     color: #FFFFFF !important;
     background-color: #1D4ED8 !important;
+}
+
+.nav-btn:active {
+    transform: scale(0.96);
 }
 
 .nav-btn.active {
@@ -907,17 +911,30 @@ h1, h2, h3, h4 {
     right: 0;
     width: 280px;
     background-color: var(--bg-surface);
-    border: 2px solid var(--border-medium);
+    border: 1px solid var(--border-medium);
     border-radius: var(--radius-md);
-    box-shadow: none;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
     padding: 14px;
     z-index: 1500;
-    animation: dropdownFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top right;
+    animation: dropdownEntrance 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-@keyframes dropdownFadeIn {
+
+@keyframes dropdownEntrance {
     from {
         opacity: 0;
-        transform: translateY(-8px) scale(0.98);
+        transform: translateY(-8px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes dropdownEntranceBottom {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.96);
     }
     to {
         opacity: 1;
@@ -1004,10 +1021,15 @@ h1, h2, h3, h4 {
     font-family: var(--font);
     font-size: 12px;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.12s ease, transform 0.12s ease, color 0.12s ease;
 }
 .dropdown-item:hover {
     background-color: var(--bg-hover);
+    color: #FFFFFF;
+    transform: translateX(3px);
+}
+.dropdown-item:active {
+    transform: translateX(1px) scale(0.99);
 }
 .dropdown-footer {
     padding-top: 2px;
@@ -1028,8 +1050,16 @@ h1, h2, h3, h4 {
     border-radius: var(--radius-sm);
     border: 1px solid transparent;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: scale(0.97);
 }
 
 .btn-primary {
@@ -1182,15 +1212,21 @@ h1, h2, h3, h4 {
 
 .view-panel {
     display: none;
-    animation: fadeIn 0.15s ease;
 }
 .view-panel.active {
     display: block;
+    animation: viewFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(3px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes viewFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .panel-head {
@@ -1239,12 +1275,16 @@ h1, h2, h3, h4 {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
     box-sizing: border-box;
 }
 .pill-btn:hover {
     color: var(--text-primary);
-    border-color: var(--text-muted);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+.pill-btn:active {
+    transform: scale(0.96);
 }
 .pill-btn.active {
     background-color: var(--accent-subtle);
@@ -2390,6 +2430,7 @@ input:focus, select:focus, textarea:focus {
     justify-content: center;
     z-index: 3000;
     padding: 20px;
+    animation: modalBackdropFadeIn 0.18s ease forwards;
 }
 
 .modal-box {
@@ -2399,7 +2440,24 @@ input:focus, select:focus, textarea:focus {
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-lg);
     padding: 24px;
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.85);
+    animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalBackdropFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalPopIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .modal-head {
@@ -2972,9 +3030,7 @@ input:focus, select:focus, textarea:focus {
     left: 0;
     right: 0;
     z-index: 2800;
-    background: rgba(11, 23, 44, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: #08132B;
     border-top: 1px solid rgba(59, 130, 246, 0.25);
     height: 60px;
     padding: 0 4px calc(env(safe-area-inset-bottom, 0px));
@@ -3182,9 +3238,7 @@ input:focus, select:focus, textarea:focus {
         height: 56px !important;
         padding: 0 4px calc(env(safe-area-inset-bottom, 0px)) !important;
         z-index: 2800 !important;
-        background: rgba(11, 23, 44, 0.96) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
+        background: #08132B !important;
         border-top: 1px solid rgba(59, 130, 246, 0.25) !important;
         box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6) !important;
         align-items: center !important;
@@ -3331,7 +3385,7 @@ input:focus, select:focus, textarea:focus {
         gap: 8px !important;
         position: sticky !important;
         top: 0 !important;
-        z-index: 1000 !important;
+        z-index: 3000 !important;
         width: 100% !important;
         max-width: 100vw !important;
         box-sizing: border-box !important;
@@ -3453,20 +3507,41 @@ input:focus, select:focus, textarea:focus {
         overflow-x: hidden !important;
     }
 
-    /* Floating Full-Width Dropdown Sheets on Mobile */
+    /* Clean Solid Floating Menus on Mobile (No Screen Blurring) */
     .notification-dropdown-menu,
     .user-dropdown-menu {
         position: fixed !important;
-        top: 58px !important;
-        left: 8px !important;
-        right: 8px !important;
-        width: auto !important;
-        max-width: calc(100vw - 16px) !important;
-        max-height: calc(100dvh - 72px) !important;
-        overflow-y: auto !important;
+        top: 56px !important;
+        bottom: auto !important;
+        right: 10px !important;
+        left: auto !important;
+        width: 320px !important;
+        max-width: calc(100vw - 20px) !important;
+        max-height: calc(100dvh - 120px) !important;
+        background: #08132B !important;
+        border: 1px solid #1E3A8A !important;
         border-radius: 12px !important;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.9) !important;
         z-index: 3500 !important;
-        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        animation: dropdownEntrance 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        transform-origin: top right;
+    }
+
+    /* When opened from bottom "More" nav tab */
+    .user-dropdown-menu[data-origin="bottom"] {
+        top: auto !important;
+        bottom: calc(62px + env(safe-area-inset-bottom, 0px)) !important;
+        animation: dropdownEntranceBottom 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        transform-origin: bottom right;
+    }
+
+    [data-theme="light"] .notification-dropdown-menu,
+    [data-theme="light"] .user-dropdown-menu {
+        background: #FFFFFF !important;
+        border: 1px solid #CBD5E1 !important;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16) !important;
     }
 
     /* Role Scope Banner */
@@ -4050,10 +4125,11 @@ input:focus, select:focus, textarea:focus {
     background: var(--bg-surface);
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-md);
-    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.7);
     z-index: 2500;
     overflow: hidden;
-    animation: fadeInMenu 0.15s ease-out;
+    animation: dropdownEntrance 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-origin: top right;
 }
 
 .notif-header {
@@ -4130,12 +4206,13 @@ input:focus, select:focus, textarea:focus {
     padding: 10px 12px;
     margin-bottom: 8px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .notif-card:hover {
     border-color: var(--accent);
     background: var(--bg-hover);
+    transform: translateX(3px);
 }
 
 .notif-card.card-crit {
@@ -4543,11 +4620,10 @@ input:focus, select:focus, textarea:focus {
     right: 8px;
     display: flex;
     justify-content: space-around;
-    background: rgba(8, 19, 43, 0.9);
+    background: rgba(8, 19, 43, 0.95);
     border: 1px solid #1E3A8A;
     border-radius: var(--radius-sm);
     padding: 6px 12px;
-    backdrop-filter: blur(4px);
 }
 
 .hud-stat {
@@ -5123,7 +5199,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .map-chip-btn {
-    background: rgba(8, 19, 43, 0.88);
+    background: rgba(8, 19, 43, 0.95);
     border: 1px solid rgba(59, 130, 246, 0.35);
     color: #94A3B8;
     padding: 4px 9px;
@@ -5131,7 +5207,6 @@ input:focus, select:focus, textarea:focus {
     font-size: 10.5px;
     font-weight: 700;
     cursor: pointer;
-    backdrop-filter: blur(8px);
     transition: all 0.15s ease;
     user-select: none;
 }
@@ -5163,7 +5238,7 @@ input:focus, select:focus, textarea:focus {
     bottom: 8px;
     left: 8px;
     z-index: 10;
-    background: rgba(8, 19, 43, 0.92);
+    background: rgba(8, 19, 43, 0.95);
     border: 1px solid rgba(59, 130, 246, 0.3);
     border-radius: 20px;
     padding: 4px 10px;
@@ -5172,7 +5247,6 @@ input:focus, select:focus, textarea:focus {
     color: #93C5FD;
     pointer-events: none;
     transition: opacity 0.5s ease;
-    backdrop-filter: blur(6px);
 }
 
 /* Mobile Map Expand Button */
@@ -5232,15 +5306,13 @@ input:focus, select:focus, textarea:focus {
 .mobile-search-bar-wrap {
     position: sticky;
     top: 54px;
-    z-index: 1050;
+    z-index: 2900;
     width: 100%;
-    background: rgba(11, 23, 44, 0.98);
-    border-bottom: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    background: #08132B;
+    border-bottom: 1px solid #1E3A8A;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
     padding: 8px 12px;
     box-sizing: border-box;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     animation: slideDownSearch 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -5286,27 +5358,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 .mobile-sheet-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 2700;
-    transition: opacity 0.2s ease;
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
-/* Mobile Bottom Sheet Menu Mode */
 @media (max-width: 768px) {
-    .user-dropdown-menu.bottom-sheet-mode,
-    .notification-dropdown-menu.bottom-sheet-mode {
-        top: auto !important;
-        bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
-        border-radius: 18px 18px 0 0 !important;
-        max-height: calc(85dvh - 60px) !important;
-        border-bottom: none !important;
-        box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.8) !important;
-        animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    }
 
     .quick-ops-actions {
         width: 100%;

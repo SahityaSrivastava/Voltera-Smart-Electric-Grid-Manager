@@ -10,7 +10,7 @@
     <title>Voltera &bull; Power Grid Operations</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/voltera_logo.svg') }}?v={{ cache_buster }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ cache_buster }}">
 </head>
@@ -33,7 +33,7 @@
                         <div class="login-brand-meta">
                             <div class="brand-title-row">
                                 <h1 class="login-brand-title">Voltera</h1>
-                                <span class="footer-version-tag header-version-tag">Version 1.0.2</span>
+                                <span class="footer-version-tag header-version-tag">Version 1.1.0</span>
                             </div>
                             <span class="login-brand-subtitle">Power Grid Operations</span>
                         </div>
@@ -101,7 +101,7 @@
 
                     <!-- Bottom Login Screen Copyright Line with Integrated Version -->
                     <div class="login-copyright-line">
-                        &copy; 2026 Voltera Power Grid Operations &bull; Version 1.0.2 &bull; MVVNL / UPPCL &bull; All Rights Reserved.
+                        &copy; 2026 Voltera Power Grid Operations &bull; Version 1.1.0 &bull; MVVNL / UPPCL &bull; All Rights Reserved.
                     </div>
                 </div>
             </div>
@@ -118,7 +118,7 @@
                     <div class="brand-text-group">
                         <div class="brand-title-row">
                             <span class="brand-title">Voltera</span>
-                            <span class="footer-version-tag header-version-tag">Version 1.0.2</span>
+                            <span class="footer-version-tag header-version-tag">Version 1.1.0</span>
                         </div>
                         <span class="brand-dept">Grid Operations</span>
                     </div>
@@ -188,7 +188,7 @@
                         <div class="notif-sub-bar">
                             <span id="notif-summary-text">Active notifications</span>
                             <div class="notif-actions-group">
-                                <button type="button" class="btn-notif-action btn-notif-read-all" id="btn-notif-mark-read" onclick="markAllNotificationsAsRead(event)" title="Mark all alerts as read">✓ Mark All Read</button>
+                                <button type="button" class="btn-notif-action btn-notif-read-all" id="btn-notif-mark-read" onclick="markAllNotificationsAsRead(event)" title="Mark all alerts as read">Mark All Read</button>
                                 <button type="button" class="btn-notif-action" onclick="refreshNotifications(event)">Refresh</button>
                             </div>
                         </div>
@@ -262,6 +262,9 @@
                         <div class="dropdown-section" id="dropdown-nav-shortcuts">
                             <span class="dropdown-section-title">Navigation Shortcuts</span>
                             <button type="button" class="dropdown-item" data-target-view="view-overview" onclick="switchView('view-overview'); closeProfileMenu();">Overview Dashboard</button>
+                            <button type="button" class="dropdown-item" data-target-view="view-incidents" onclick="switchView('view-incidents'); closeProfileMenu();">Outages &amp; Feeder Trips</button>
+                            <button type="button" class="dropdown-item" data-target-view="view-substations" onclick="switchView('view-substations'); closeProfileMenu();">Substations &amp; Telemetry</button>
+                            <button type="button" class="dropdown-item" data-target-view="view-facilities" onclick="switchView('view-facilities'); closeProfileMenu();">Vital Facilities (Hospitals &amp; Water)</button>
                             <button type="button" class="dropdown-item" data-target-view="view-fleet" onclick="switchView('view-fleet'); closeProfileMenu();">Field Fleet Roster</button>
                             <button type="button" class="dropdown-item" data-target-view="view-crew-terminal" onclick="switchView('view-crew-terminal'); closeProfileMenu();">Crew Dispatch &amp; Route Terminal</button>
                             <button type="button" class="dropdown-item" data-target-view="view-citizen" onclick="switchView('view-citizen'); closeProfileMenu();">Citizen Outage Desk</button>
@@ -272,7 +275,7 @@
 
                         <div class="dropdown-footer">
                             <button type="button" class="btn btn-secondary btn-sm btn-full" id="btn-logout">Sign Out</button>
-                            <div class="dropdown-version-row">Voltera Grid Operations &bull; Version 1.0.2</div>
+                            <div class="dropdown-version-row">Voltera Grid Operations &bull; Version 1.1.0</div>
                         </div>
                     </div>
                 </div>
@@ -325,11 +328,6 @@
                 <!-- Role Scope & Access Level Notice Banner (Dynamic per Role: Admin 100%, Operator 85%, Crew 50%, Citizen 25%) -->
                 <div id="role-context-banner-container" class="role-scope-banner-wrap"></div>
 
-                <!-- Operations Center Visual Banner (Substation & Control Room View) -->
-                <div class="home-operations-hero">
-                    <img src="{{ url_for('static', filename='img/home_hero.jpg') }}?v={{ cache_buster }}" alt="Voltera Grid Operations" class="home-hero-img">
-                </div>
-
                 <!-- Quick Operations Bar -->
                 <div class="quick-ops-bar">
                     <div class="quick-ops-search">
@@ -341,7 +339,7 @@
                     <div class="quick-ops-actions">
                         <button type="button" class="btn btn-emergency-pulse" id="btn-trigger-emergency" onclick="triggerRandomEmergency(event)" title="Simulate a live grid emergency outage fault with automatic crew dispatch recommendations">
                             <span class="pulse-warning-dot"></span>
-                            <span>⚡ Trigger Emergency Fault</span>
+                            <span>Simulate Fault</span>
                         </button>
                     </div>
                     <div class="quick-ops-live-tags">
@@ -486,12 +484,12 @@
                                 </div>
                                 <!-- Layer Toggles Ribbon -->
                                 <div class="map-layer-ribbon">
-                                    <button type="button" class="map-chip-btn active" id="chip-layer-flow" onclick="toggleMapLayer('flow')">⚡ Power Flow</button>
-                                    <button type="button" class="map-chip-btn active" id="chip-layer-facilities" onclick="toggleMapLayer('facilities')">🏥 Vital Sites</button>
-                                    <button type="button" class="map-chip-btn active" id="chip-layer-roads" onclick="toggleMapLayer('roads')">🛣️ Arterial Roads</button>
+                                    <button type="button" class="map-chip-btn active" id="chip-layer-flow" onclick="toggleMapLayer('flow')">Power Flow</button>
+                                    <button type="button" class="map-chip-btn active" id="chip-layer-facilities" onclick="toggleMapLayer('facilities')">Vital Sites</button>
+                                    <button type="button" class="map-chip-btn active" id="chip-layer-roads" onclick="toggleMapLayer('roads')">Road Network</button>
                                 </div>
                                 <div id="mob-map-gesture-hint" class="mobile-map-gesture-hint">
-                                    <span>👆 1-finger pan &bull; Pinch to zoom</span>
+                                    <span>Pan: Drag &bull; Zoom: Pinch / Scroll</span>
                                 </div>
                                 <!-- Solid Map Legend with Info Tip -->
                                 <div class="map-legend">
@@ -949,7 +947,7 @@
                 <div class="footer-left">
                     <span class="copyright-mark">&copy; 2026 Voltera Power Grid Operations</span>
                     <span class="footer-sep">&bull;</span>
-                    <span class="footer-version-tag">Version 1.0.2</span>
+                    <span class="footer-version-tag">Version 1.1.0</span>
                     <span class="footer-sep">&bull;</span>
                     <span class="footer-org">Madhyanchal Vidyut Vitaran Nigam Ltd. (MVVNL) / UPPCL</span>
                     <span class="footer-sep">&bull;</span>

@@ -459,7 +459,7 @@ def simulate_random_emergency():
             sender_name="SCADA Automated Grid Telemetry",
             target_role="OPERATOR",
             channel="SCADA",
-            message_body=f"🚨 [SCADA EMERGENCY] {cause} at {tf.substation_name}. Severity {sev}/100. Automated dispatch order initiated."
+            message_body=f"[SCADA EMERGENCY] {cause} at {tf.substation_name}. Severity {sev}/100. Automated dispatch order initiated."
         )
     except Exception as e:
         current_app.logger.warning(f"Failed to log emergency cross device message: {e}")
