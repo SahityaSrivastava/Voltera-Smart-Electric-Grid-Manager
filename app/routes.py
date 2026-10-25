@@ -409,6 +409,70 @@ def simulate_fault(tf_id):
     broadcast_event("fault_simulated", {"transformer": tf.to_dict(), "incidents": [i.to_dict() for i in incidents]})
     return jsonify({"success": True, "transformer": tf.to_dict(), "incidents": [i.to_dict() for i in incidents]})
 
+@api_bp.route("/emergency/simulate", methods=["POST"])
+@role_required("OPERATOR")
+def simulate_random_emergency():
+    all_tfs = Transformer.query.all()
+    if not all_tfs:
+        return jsonify({"success": False, "error": "No substations found"}), 404
+
+    # Select random transformer, preferably one not currently CRITICAL
+    available_tfs = [t for t in all_tfs if t.status != "CRITICAL"]
+    tf = random.choice(available_tfs) if available_tfs else random.choice(all_tfs)
+
+    emergency_scenarios = [
+        ("33kV Busbar Arc Flash & Multi-Feeder Trip", 95.0, "Catastrophic busbar flashover detected across distribution panels. High fault current triggered protection relays."),
+        ("132/33kV Primary Transformer Core Thermal Overload", 92.5, "Severe core overheating reaching 106°C under peak distribution stress. Buchholz gas relay warning activated."),
+        ("Underground 33kV Feeder Cable Severance", 97.0, "Civil works excavator severed primary underground distribution line. Immediate gang clearance required."),
+        ("Severe Thunderstorm Lightning Strike on Feeder Circuit", 88.5, "Atmospheric surge strike caused insulator shatter and transient phase-to-ground flashover."),
+        ("Phase Imbalance & Frequency Surge Outage", 86.0, "Heavy asymmetric load caused severe voltage sag to 172V and phase distortion across busbars."),
+        ("Substation Oil Pressure Loss & Breaker Lockout", 94.0, "Rapid cooling oil leak triggered automatic circuit breaker lockout to prevent tank rupture.")
+    ]
+    cause, sev, desc = random.choice(emergency_scenarios)
+
+    tf.temperature_c = round(random.uniform(98.0, 114.0), 1)
+    tf.voltage_v = round(random.uniform(165.0, 180.0), 1)
+    tf.load_pct = round(random.uniform(108.0, 125.0), 1)
+    tf.oil_level_pct = round(random.uniform(25.0, 38.0), 1)
+    tf.failure_probability = round(random.uniform(0.91, 0.99), 2)
+    tf.status = "CRITICAL"
+    tf.last_updated = _utc_now()
+    db.session.commit()
+
+    incidents = correlate_and_detect_outages(tf.id)
+    new_inc = incidents[0] if incidents else None
+
+    # Broadcast real-time SSE emergency event
+    broadcast_event("emergency_simulated", {
+        "transformer": tf.to_dict(),
+        "emergency_title": cause,
+        "severity": sev,
+        "description": desc,
+        "incident": new_inc.to_dict() if new_inc else None
+    })
+
+    # Log cross device notification
+    try:
+        create_cross_device_message(
+            incident_id=new_inc.id if new_inc else None,
+            sender_role="SYSTEM",
+            sender_name="SCADA Automated Grid Telemetry",
+            target_role="OPERATOR",
+            channel="SCADA",
+            message_body=f"🚨 [SCADA EMERGENCY] {cause} at {tf.substation_name}. Severity {sev}/100. Automated dispatch order initiated."
+        )
+    except Exception as e:
+        current_app.logger.warning(f"Failed to log emergency cross device message: {e}")
+
+    return jsonify({
+        "success": True,
+        "transformer": tf.to_dict(),
+        "emergency_title": cause,
+        "severity": sev,
+        "description": desc,
+        "incident": new_inc.to_dict() if new_inc else None
+    })
+
 @api_bp.route("/incidents", methods=["GET"])
 def get_incidents():
     status_filter, region_id = request.args.get("status"), request.args.get("region_id", type=int)

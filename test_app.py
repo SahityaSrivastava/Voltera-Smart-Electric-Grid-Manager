@@ -443,6 +443,44 @@ class PowerGridLucknowTestCase(unittest.TestCase):
             self.assertNotIn(tok, rep_tokens)
             rep_tokens.add(tok)
 
+    def test_14_emergency_simulation_and_ui_enhancements(self):
+        # 1. Test unauthenticated emergency simulation returns 401
+        res_unauth = self.client.post('/api/emergency/simulate')
+        self.assertEqual(res_unauth.status_code, 401)
+
+        # 2. Login as Operator
+        res_login = self.client.post('/api/auth/login', json={
+            'email': 'operator@lesa.up.gov.in',
+            'password': 'LucknowGrid@2026'
+        })
+        self.assertEqual(res_login.status_code, 200)
+
+        # 3. Trigger emergency simulation
+        res_sim = self.client.post('/api/emergency/simulate')
+        self.assertEqual(res_sim.status_code, 200)
+        sim_data = res_sim.get_json()
+        self.assertTrue(sim_data['success'])
+        self.assertIn('incident', sim_data)
+        self.assertIn('transformer', sim_data)
+        self.assertIn('severity', sim_data)
+        self.assertGreaterEqual(sim_data['severity'], 80)
+        self.assertEqual(sim_data['transformer']['status'], 'CRITICAL')
+
+        # 4. Check UI elements on homepage
+        home_res = self.client.get('/')
+        self.assertEqual(home_res.status_code, 200)
+        html = home_res.get_data(as_text=True)
+        self.assertIn('id="btn-notif-mark-read"', html)
+        self.assertIn('id="btn-trigger-emergency"', html)
+        self.assertIn('id="btn-mob-search-toggle"', html)
+        self.assertIn('id="mobile-search-bar"', html)
+        self.assertIn('id="mobile-sheet-backdrop"', html)
+        self.assertIn('id="chip-layer-flow"', html)
+        self.assertIn('id="chip-layer-facilities"', html)
+        self.assertIn('id="chip-layer-roads"', html)
+        self.assertIn('id="btn-mob-map-expand"', html)
+        self.assertIn('id="mob-map-gesture-hint"', html)
+
 if __name__ == '__main__':
     unittest.main()
 

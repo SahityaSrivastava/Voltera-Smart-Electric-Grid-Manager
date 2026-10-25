@@ -169,6 +169,14 @@ const state = {
     activeRouteWaypoints: [],
     activeRouteSimulation: null,
     unreadAlerts: [],
+    readNotificationIds: new Set(JSON.parse(localStorage.getItem('voltera_read_notifs') || '[]')),
+    notificationsViewed: false,
+    randomScadaNotices: [],
+    mapLayers: {
+        flow: true,
+        facilities: true,
+        roads: true
+    },
     activeStatusFilter: 'ACTIVE',
     refreshTimer: null,
     // GIS Map Canvas State
@@ -192,6 +200,99 @@ const state = {
         isCompact: localStorage.getItem('voltera_map_compact') === 'true'
     }
 };
+
+// Arterial Road Corridors across Lucknow (SCADA GIS Base Layer)
+const LUCKNOW_ROAD_CORRIDORS = [
+    {
+        name: 'Shaheed Path Expressway',
+        ref: 'Outer Ring Express',
+        coords: [
+            [26.765, 80.890],
+            [26.755, 80.915],
+            [26.754, 80.942],
+            [26.775, 80.970],
+            [26.805, 80.990],
+            [26.832, 81.015],
+            [26.858, 81.026],
+            [26.878, 81.030]
+        ]
+    },
+    {
+        name: 'Kanpur Road NH-27',
+        ref: 'NH-27',
+        coords: [
+            [26.745, 80.875],
+            [26.760, 80.885],
+            [26.782, 80.890],
+            [26.804, 80.892],
+            [26.816, 80.902],
+            [26.828, 80.920],
+            [26.838, 80.932],
+            [26.848, 80.944]
+        ]
+    },
+    {
+        name: 'Mahatma Gandhi Marg (MG Marg)',
+        ref: 'MG Marg',
+        coords: [
+            [26.828, 80.920],
+            [26.840, 80.932],
+            [26.848, 80.944],
+            [26.850, 80.950],
+            [26.854, 80.965],
+            [26.855, 80.976]
+        ]
+    },
+    {
+        name: 'Inner Ring Road / Lohia Path',
+        ref: 'Lohia Path',
+        coords: [
+            [26.854, 80.965],
+            [26.858, 80.985],
+            [26.862, 81.000],
+            [26.872, 80.998],
+            [26.885, 80.985],
+            [26.902, 80.960],
+            [26.915, 80.945]
+        ]
+    },
+    {
+        name: 'Old Lucknow Heritage Corridor',
+        ref: 'Chowk Rd',
+        coords: [
+            [26.848, 80.944],
+            [26.853, 80.932],
+            [26.865, 80.915],
+            [26.868, 80.910],
+            [26.871, 80.899],
+            [26.852, 80.888],
+            [26.841, 80.885]
+        ]
+    },
+    {
+        name: 'Kursi & Sitapur Corridor',
+        ref: 'Kursi Rd',
+        coords: [
+            [26.865, 80.938],
+            [26.878, 80.954],
+            [26.892, 80.942],
+            [26.918, 80.938],
+            [26.935, 80.935]
+        ]
+    }
+];
+
+// Vital Facilities & Priority Infrastructure Landmarks
+const VITAL_FACILITY_LANDMARKS = [
+    { name: 'SGPGI Hospital', type: 'hospital', icon: '+', lat: 26.7450, lng: 80.9380 },
+    { name: 'KGMU Trauma Center', type: 'hospital', icon: '+', lat: 26.8650, lng: 80.9150 },
+    { name: 'Dr RMLIMS Hospital', type: 'hospital', icon: '+', lat: 26.8600, lng: 81.0020 },
+    { name: 'Charbagh Railway Station', type: 'transit', icon: '🚆', lat: 26.8285, lng: 80.9200 },
+    { name: 'CCS Int Airport (Amausi)', type: 'airport', icon: '✈', lat: 26.7606, lng: 80.8893 },
+    { name: 'UP Vidhan Sabha', type: 'gov', icon: '🏛️', lat: 26.8460, lng: 80.9420 },
+    { name: 'Aishbagh Water Works', type: 'water', icon: '💧', lat: 26.8370, lng: 80.9150 },
+    { name: 'Ekana Int Stadium', type: 'civic', icon: '🏟️', lat: 26.8120, lng: 81.0150 }
+];
 
 // Lucknow Locality Geocodes for Citizen Reports
 const LOCALITY_COORDS = {
@@ -420,6 +521,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initQuickOperationsTracker();
     loadCrewAccounts();
     setupNotificationCenter();
+    setupMobileSearch();
+    startRandomSCADAAlerts();
+    setupSSEListener();
+    startMapAnimationLoop();
 
     // Check if previously authenticated session exists
     checkCurrentUser();
@@ -434,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==============================================================================
-// 1b. STANDARD 60 FPS RENDER GOVERNOR
+// 1b. CONTINUOUS 60 FPS MAP RENDER GOVERNOR & ANIMATION LOOP
 // ==============================================================================
 let mapRenderScheduled = false;
 let lastRenderTime = 0;
@@ -453,6 +558,20 @@ window.scheduleMapRender = function() {
         renderGISMap();
     });
 };
+
+let mapAnimationLoopId = null;
+function startMapAnimationLoop() {
+    if (mapAnimationLoopId) return;
+    function animate() {
+        const overviewEl = document.getElementById('view-overview');
+        const isOverviewVisible = overviewEl && !overviewEl.classList.contains('hidden');
+        if (isOverviewVisible && !document.hidden && state.map.canvas && state.map.ctx) {
+            renderGISMap();
+        }
+        mapAnimationLoopId = requestAnimationFrame(animate);
+    }
+    mapAnimationLoopId = requestAnimationFrame(animate);
+}
 
 
 
@@ -677,8 +796,14 @@ function setupUserProfileMenu() {
 function openProfileMenu() {
     const trigger = document.getElementById('user-profile-btn');
     const menu = document.getElementById('user-profile-menu');
+    const backdrop = document.getElementById('mobile-sheet-backdrop');
+    closeNotificationCenter();
     if (menu) {
         menu.classList.remove('hidden');
+        if (window.innerWidth <= 768) {
+            menu.classList.add('bottom-sheet-mode');
+            if (backdrop) backdrop.classList.remove('hidden');
+        }
         sound.play('click');
     }
     if (trigger) trigger.setAttribute('aria-expanded', 'true');
@@ -687,10 +812,17 @@ function openProfileMenu() {
 function closeProfileMenu() {
     const trigger = document.getElementById('user-profile-btn');
     const menu = document.getElementById('user-profile-menu');
+    const backdrop = document.getElementById('mobile-sheet-backdrop');
     if (menu && !menu.classList.contains('hidden')) {
         menu.classList.add('hidden');
+        menu.classList.remove('bottom-sheet-mode');
     }
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    const notifMenu = document.getElementById('notification-center-menu');
+    const isNotifOpen = notifMenu && !notifMenu.classList.contains('hidden');
+    if (!isNotifOpen && backdrop) {
+        backdrop.classList.add('hidden');
+    }
 }
 
 window.toggleUserProfileMenu = function(e) {
@@ -1385,6 +1517,16 @@ function initGISMap() {
         state.map.zoom = Math.max(0.6, Math.min(3.5, state.map.zoom * zoomDelta));
         scheduleMapRender();
     }, { passive: false });
+
+    // Auto-fade mobile gesture hint
+    const hint = document.getElementById('mob-map-gesture-hint');
+    if (hint) {
+        setTimeout(() => {
+            hint.style.transition = 'opacity 0.6s ease';
+            hint.style.opacity = '0';
+            setTimeout(() => { if (hint.parentNode) hint.parentNode.removeChild(hint); }, 700);
+        }, 4500);
+    }
 }
 
 function resizeCanvas() {
@@ -1481,58 +1623,79 @@ function renderGISMap() {
 }
 
 // ------------------------------------------------------------------------------
-// 2D GRID SCHEMATIC - Crisp single-line schematic
+// 2D GRID SCHEMATIC - Comprehensive SCADA GIS Power Grid Operations Map
 // ------------------------------------------------------------------------------
 function render2DGrid(ctx, w, h, isLight) {
-    // 1. Background
-    ctx.fillStyle = isLight ? '#F3F4F6' : '#000000';
+    // 1. Dark SCADA Background & Coordinate Grid
+    ctx.fillStyle = isLight ? '#F1F5F9' : '#050A15';
     ctx.fillRect(0, 0, w, h);
 
-    // 2. Solid Orthogonal Coordinate Grid (Zero blur/glow)
-    ctx.strokeStyle = isLight ? '#E5E7EB' : '#171717';
+    // Subtle Orthogonal SCADA Coordinate Grid
+    ctx.strokeStyle = isLight ? '#E2E8F0' : '#0C182F';
     ctx.lineWidth = 1;
-    for (let x = 0; x < w; x += 40) {
+    const gridSpacing = 38;
+    for (let x = 0; x < w; x += gridSpacing) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, h);
         ctx.stroke();
     }
-    for (let y = 0; y < h; y += 40) {
+    for (let y = 0; y < h; y += gridSpacing) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(w, y);
         ctx.stroke();
     }
 
-    // 3. Gomti River (Solid Clean Flow)
+    // 2. Arterial Road Corridors (When enabled)
+    if (!state.mapLayers || state.mapLayers.roads !== false) {
+        drawArterialRoads(ctx, isLight);
+    }
+
+    // 3. Gomti River (Geographic Landmark Flow)
+    ctx.save();
     ctx.beginPath();
-    ctx.strokeStyle = isLight ? '#93C5FD' : '#1E3A8A';
-    ctx.lineWidth = Math.max(6, 9 * state.map.zoom);
+    ctx.strokeStyle = isLight ? '#93C5FD' : '#17366E';
+    ctx.lineWidth = Math.max(6, 9.5 * state.map.zoom);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     GOMTI_RIVER_WAYPOINTS.forEach((pt, idx) => {
-        const p = projectToMap(pt[0], pt[1], '2d');
+        const p = projectToMap(pt[0], pt[1]);
         if (idx === 0) ctx.moveTo(p.x, p.y);
         else ctx.lineTo(p.x, p.y);
     });
     ctx.stroke();
 
+    // Gomti River Water Flow Centerline
+    ctx.beginPath();
+    ctx.strokeStyle = isLight ? '#BFDBFE' : '#2563EB';
+    ctx.lineWidth = Math.max(1.5, 2.2 * state.map.zoom);
+    ctx.setLineDash([8, 12]);
+    ctx.lineDashOffset = -(Date.now() / 60) % 20;
+    GOMTI_RIVER_WAYPOINTS.forEach((pt, idx) => {
+        const p = projectToMap(pt[0], pt[1]);
+        if (idx === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+    });
+    ctx.stroke();
+    ctx.restore();
+
     // River Label
-    const midRiver = projectToMap(26.856, 80.965, '2d');
+    const midRiver = projectToMap(26.856, 80.965);
     ctx.fillStyle = isLight ? '#1D4ED8' : '#60A5FA';
     ctx.font = '600 11px Segoe UI, Roboto, Arial, sans-serif';
-    ctx.fillText('Gomti River', midRiver.x - 26, midRiver.y - 12);
+    ctx.fillText('~ Gomti River Corridor ~', midRiver.x - 52, midRiver.y - 12);
 
-    // 4. Regional Boundaries (Solid Dashed Rings)
+    // 4. Regional Boundaries (Subtle Dashed Rings)
     Object.keys(REGION_CENTERS).forEach(key => {
         if (key === 'ALL') return;
         const reg = REGION_CENTERS[key];
-        const p = projectToMap(reg.lat, reg.lng, '2d');
+        const p = projectToMap(reg.lat, reg.lng);
         const radius = 65 * state.map.zoom;
 
         ctx.beginPath();
-        ctx.fillStyle = isLight ? '#FFFFFF' : '#0A0A0A';
-        ctx.strokeStyle = isLight ? '#D1D5DB' : '#262626';
+        ctx.fillStyle = isLight ? 'rgba(255, 255, 255, 0.4)' : 'rgba(10, 18, 38, 0.4)';
+        ctx.strokeStyle = isLight ? '#CBD5E1' : '#1E293B';
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
@@ -1540,53 +1703,79 @@ function render2DGrid(ctx, w, h, isLight) {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Region Label
+        // Region Zone Label
         const zoneLabel = reg.name;
-        ctx.font = '600 11px Segoe UI, Roboto, Arial, sans-serif';
-        const lx = p.x - (zoneLabel.length * 3);
+        ctx.font = '700 10.5px Segoe UI, Roboto, Arial, sans-serif';
+        const lx = p.x - (zoneLabel.length * 3.2);
         const ly = p.y + radius + 14;
-        ctx.strokeStyle = isLight ? '#FFFFFF' : '#000000';
+        ctx.strokeStyle = isLight ? '#FFFFFF' : '#050A15';
         ctx.lineWidth = 3;
         ctx.strokeText(zoneLabel, lx, ly);
-        ctx.fillStyle = isLight ? '#374151' : '#9CA3AF';
+        ctx.fillStyle = isLight ? '#475569' : '#94A3B8';
         ctx.fillText(zoneLabel, lx, ly);
     });
 
-    // 5. High-Voltage Grid Lines (Solid Crisp Connections)
-    ctx.strokeStyle = isLight ? '#2563EB' : '#3B82F6';
-    ctx.lineWidth = 1.5;
-    GRID_CONNECTIONS.forEach(([codeA, codeB]) => {
+    // 5. High-Voltage Grid Lines & Live Power Flow
+    const isFlowActive = !state.mapLayers || state.mapLayers.flow !== false;
+    GRID_CONNECTIONS.forEach(([codeA, codeB], idx) => {
         const tfA = state.substations.find(t => t.code === codeA);
         const tfB = state.substations.find(t => t.code === codeB);
         if (tfA && tfB) {
-            const pA = projectToMap(tfA.latitude, tfA.longitude, '2d');
-            const pB = projectToMap(tfB.latitude, tfB.longitude, '2d');
+            const pA = projectToMap(tfA.latitude, tfA.longitude);
+            const pB = projectToMap(tfB.latitude, tfB.longitude);
+
+            // Base transmission line
+            ctx.save();
+            ctx.strokeStyle = isLight ? '#3B82F6' : '#1E40AF';
+            ctx.lineWidth = 2.0;
             ctx.beginPath();
             ctx.moveTo(pA.x, pA.y);
             ctx.lineTo(pB.x, pB.y);
             ctx.stroke();
+
+            // Animated power flow energy pulses along feeder line
+            if (isFlowActive) {
+                ctx.strokeStyle = isLight ? 'rgba(29, 78, 216, 0.75)' : 'rgba(96, 165, 250, 0.85)';
+                ctx.lineWidth = 2.2;
+                ctx.setLineDash([5, 12]);
+                ctx.lineDashOffset = -(Date.now() / 38) % 17;
+                ctx.beginPath();
+                ctx.moveTo(pA.x, pA.y);
+                ctx.lineTo(pB.x, pB.y);
+                ctx.stroke();
+
+                // Gliding electron particle
+                const flowT = ((Date.now() / 2200) + (idx * 0.17)) % 1.0;
+                const px = pA.x + (pB.x - pA.x) * flowT;
+                const py = pA.y + (pB.y - pA.y) * flowT;
+                ctx.fillStyle = '#38BDF8';
+                ctx.beginPath();
+                ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
         }
     });
 
-    // 5b. Active Crew Dispatch Route (Highlighted Emergency Transit Vector)
+    // 6. Active Crew Dispatch Route
     if (state.activeRouteWaypoints && state.activeRouteWaypoints.length > 1) {
         ctx.save();
         ctx.strokeStyle = '#38BDF8';
         ctx.lineWidth = 3.5;
         ctx.setLineDash([8, 6]);
-        ctx.lineDashOffset = -(Date.now() / 80) % 14;
+        ctx.lineDashOffset = -(Date.now() / 70) % 14;
         ctx.beginPath();
         state.activeRouteWaypoints.forEach((wp, idx) => {
-            const pt = projectToMap(wp[0], wp[1], '2d');
+            const pt = projectToMap(wp[0], wp[1]);
             if (idx === 0) ctx.moveTo(pt.x, pt.y);
             else ctx.lineTo(pt.x, pt.y);
         });
         ctx.stroke();
         ctx.restore();
 
-        // Draw start crew truck pin
+        // Crew truck pin
         const startWp = state.activeRouteWaypoints[0];
-        const startPt = projectToMap(startWp[0], startWp[1], '2d');
+        const startPt = projectToMap(startWp[0], startWp[1]);
         ctx.fillStyle = '#10B981';
         ctx.beginPath();
         ctx.arc(startPt.x, startPt.y, 6.5, 0, Math.PI * 2);
@@ -1597,36 +1786,62 @@ function render2DGrid(ctx, w, h, isLight) {
 
         ctx.font = '700 10.5px Segoe UI, Roboto, sans-serif';
         ctx.fillStyle = isLight ? '#065F46' : '#34D399';
-        ctx.fillText('ACTIVE CREW', startPt.x + 10, startPt.y + 4);
+        ctx.fillText('DISPATCH TRUCK', startPt.x + 10, startPt.y + 4);
     }
 
-    // 6. Substation Nodes (Solid High-Contrast Colors, Zero Halos)
+    // 7. Vital Facilities & Municipal Landmarks (When enabled)
+    if (!state.mapLayers || state.mapLayers.facilities !== false) {
+        drawVitalFacilities(ctx, isLight);
+    }
+
+    // 8. Substation Nodes & Dynamic Sonar Radar Pulsing for Faults
     const filteredTfs = getFilteredSubstations();
     filteredTfs.forEach(tf => {
         if (!tf.latitude || !tf.longitude) return;
-        const pos = projectToMap(tf.latitude, tf.longitude, '2d');
+        const pos = projectToMap(tf.latitude, tf.longitude);
 
-        let color = isLight ? '#15803D' : '#16A34A';
+        let color = isLight ? '#15803D' : '#10B981';
         let radius = 5.5;
 
         if (tf.status === 'CRITICAL') {
-            color = isLight ? '#B91C1C' : '#DC2626';
+            color = isLight ? '#B91C1C' : '#EF4444';
             radius = 7;
 
-            // Solid crisp square target indicator
-            const sqSize = 20;
+            // Dynamic expanding sonar radar waves (3 concentric pulses)
+            const now = Date.now();
+            for (let r = 0; r < 3; r++) {
+                const phase = ((now / 1100) + (r * 0.33)) % 1.0;
+                const ringRadius = radius + 3 + (phase * 24 * Math.max(1, state.map.zoom));
+                const ringAlpha = (1.0 - phase) * 0.85;
+                ctx.beginPath();
+                ctx.strokeStyle = isLight ? `rgba(185, 28, 28, ${ringAlpha})` : `rgba(239, 68, 68, ${ringAlpha})`;
+                ctx.lineWidth = 1.8;
+                ctx.arc(pos.x, pos.y, ringRadius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // High-visibility hazard square target
+            const sqSize = 22;
             ctx.strokeStyle = color;
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 2.0;
             ctx.strokeRect(pos.x - sqSize / 2, pos.y - sqSize / 2, sqSize, sqSize);
+
+            // Warning corner ticks
+            ctx.fillStyle = color;
+            ctx.fillRect(pos.x - sqSize / 2 - 2, pos.y - sqSize / 2 - 2, 4, 4);
+            ctx.fillRect(pos.x + sqSize / 2 - 2, pos.y - sqSize / 2 - 2, 4, 4);
+            ctx.fillRect(pos.x - sqSize / 2 - 2, pos.y + sqSize / 2 - 2, 4, 4);
+            ctx.fillRect(pos.x + sqSize / 2 - 2, pos.y + sqSize / 2 - 2, 4, 4);
+
         } else if (tf.status === 'WARNING') {
-            color = isLight ? '#B45309' : '#D97706';
+            color = isLight ? '#B45309' : '#F59E0B';
             radius = 6;
         }
 
-        // Solid outer ring (100% solid, no alpha glow)
+        // Solid outer ring
         ctx.beginPath();
         ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.6;
         ctx.arc(pos.x, pos.y, radius + 3, 0, Math.PI * 2);
         ctx.stroke();
 
@@ -1636,44 +1851,267 @@ function render2DGrid(ctx, w, h, isLight) {
         ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Substation label with solid background box for maximum clarity
+        // Substation label with crisp background plate
         const shortName = (tf.substation_name || tf.code).replace(/Power House|Substation|33\/11kV|132\/33kV|220kV/g, '').trim();
         const labelText = `${shortName} (${Math.round(tf.load_pct || 0)}%)`;
         const lx = pos.x + radius + 7;
         const ly = pos.y + 4;
 
         ctx.font = '600 11px Segoe UI, Roboto, Arial, sans-serif';
-        ctx.strokeStyle = isLight ? '#FFFFFF' : '#000000';
+        ctx.strokeStyle = isLight ? '#FFFFFF' : '#050A15';
         ctx.lineWidth = 3.5;
         ctx.strokeText(labelText, lx, ly);
 
-        ctx.fillStyle = isLight ? '#111827' : '#FFFFFF';
+        ctx.fillStyle = isLight ? '#111827' : '#F8FAFC';
         ctx.fillText(labelText, lx, ly);
     });
 
-    // 7. Mode Badge
-    drawMapHUD(ctx, 'VOLTERA POWER GRID', 'Lucknow Central 33/11kV Network', isLight);
+    // 9. Compass Rose (Top-Right)
+    drawCompassRose(ctx, w - 42, 44, isLight);
+
+    // 10. Metric Scale Bar (Bottom-Left)
+    drawMetricScaleBar(ctx, 22, h - 24, isLight);
+
+    // 11. SCADA HUD Overlay (Top-Left)
+    drawMapHUD(ctx, 'VOLTERA SCADA GIS', 'Lucknow 33/11kV Distribution Network', isLight);
 }
 
+// Arterial Road Corridors Rendering
+function drawArterialRoads(ctx, isLight) {
+    if (!LUCKNOW_ROAD_CORRIDORS || LUCKNOW_ROAD_CORRIDORS.length === 0) return;
+
+    LUCKNOW_ROAD_CORRIDORS.forEach(corridor => {
+        if (!corridor.coords || corridor.coords.length < 2) return;
+
+        // Road casing (underneath darker line)
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = isLight ? '#CBD5E1' : '#142038';
+        ctx.lineWidth = Math.max(3, 4.5 * state.map.zoom);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        corridor.coords.forEach((c, idx) => {
+            const pt = projectToMap(c[0], c[1]);
+            if (idx === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+        });
+        ctx.stroke();
+
+        // Core road line
+        ctx.beginPath();
+        ctx.strokeStyle = isLight ? '#94A3B8' : '#22365E';
+        ctx.lineWidth = Math.max(1.5, 2.2 * state.map.zoom);
+        corridor.coords.forEach((c, idx) => {
+            const pt = projectToMap(c[0], c[1]);
+            if (idx === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+        });
+        ctx.stroke();
+
+        // Corridor badge label near midpoint
+        if (state.map.zoom >= 1.05) {
+            const midIdx = Math.floor(corridor.coords.length / 2);
+            const midCoord = corridor.coords[midIdx];
+            const pt = projectToMap(midCoord[0], midCoord[1]);
+            const badgeText = corridor.ref || corridor.name;
+
+            ctx.font = '700 9px Segoe UI, Roboto, Arial, sans-serif';
+            const tw = ctx.measureText(badgeText).width;
+            ctx.fillStyle = isLight ? '#FFFFFF' : '#0B162C';
+            ctx.fillRect(pt.x - (tw / 2) - 4, pt.y - 14, tw + 8, 14);
+            ctx.strokeStyle = isLight ? '#94A3B8' : '#334E7D';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(pt.x - (tw / 2) - 4, pt.y - 14, tw + 8, 14);
+
+            ctx.fillStyle = isLight ? '#475569' : '#94A3B8';
+            ctx.fillText(badgeText, pt.x - (tw / 2), pt.y - 4);
+        }
+        ctx.restore();
+    });
+}
+
+// Vital Facilities & Municipal Landmarks Rendering
+function drawVitalFacilities(ctx, isLight) {
+    if (!VITAL_FACILITY_LANDMARKS || VITAL_FACILITY_LANDMARKS.length === 0) return;
+
+    VITAL_FACILITY_LANDMARKS.forEach(fac => {
+        const pt = projectToMap(fac.lat, fac.lng);
+        let badgeColor = '#38BDF8';
+        let bgBox = isLight ? '#FFFFFF' : '#0B1730';
+
+        if (fac.type === 'hospital') badgeColor = '#EF4444';
+        else if (fac.type === 'airport') badgeColor = '#0EA5E9';
+        else if (fac.type === 'transit') badgeColor = '#F59E0B';
+        else if (fac.type === 'gov') badgeColor = '#8B5CF6';
+        else if (fac.type === 'water') badgeColor = '#10B981';
+
+        // Pin diamond marker
+        ctx.save();
+        ctx.fillStyle = badgeColor;
+        ctx.beginPath();
+        const s = 4.5;
+        ctx.moveTo(pt.x, pt.y - s);
+        ctx.lineTo(pt.x + s, pt.y);
+        ctx.lineTo(pt.x, pt.y + s);
+        ctx.lineTo(pt.x - s, pt.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Text label with icon tag
+        const labelText = `${fac.icon} ${fac.name}`;
+        ctx.font = '600 9.5px Segoe UI, Roboto, Arial, sans-serif';
+        const tw = ctx.measureText(labelText).width;
+
+        ctx.fillStyle = bgBox;
+        ctx.fillRect(pt.x + 8, pt.y - 8, tw + 8, 16);
+        ctx.strokeStyle = badgeColor;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(pt.x + 8, pt.y - 8, tw + 8, 16);
+
+        ctx.fillStyle = isLight ? '#1E293B' : '#E2E8F0';
+        ctx.fillText(labelText, pt.x + 12, pt.y + 4);
+        ctx.restore();
+    });
+}
+
+// Compass Rose Indicator (Top-Right)
+function drawCompassRose(ctx, cx, cy, isLight) {
+    ctx.save();
+    // Dial background
+    ctx.fillStyle = isLight ? 'rgba(255, 255, 255, 0.9)' : 'rgba(11, 22, 44, 0.85)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = isLight ? '#CBD5E1' : '#1E3A8A';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // North Needle (Red)
+    ctx.fillStyle = '#EF4444';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 12);
+    ctx.lineTo(cx + 4, cy);
+    ctx.lineTo(cx, cy - 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // South Needle (Muted Gray)
+    ctx.fillStyle = isLight ? '#64748B' : '#475569';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + 12);
+    ctx.lineTo(cx - 4, cy);
+    ctx.lineTo(cx, cy + 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Center pin
+    ctx.fillStyle = isLight ? '#0F172A' : '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 'N' label
+    ctx.font = '700 8.5px Segoe UI, Roboto, Arial, sans-serif';
+    ctx.fillStyle = '#EF4444';
+    ctx.fillText('N', cx - 3, cy - 15);
+    ctx.restore();
+}
+
+// Metric Scale Bar (Bottom-Left)
+function drawMetricScaleBar(ctx, x, y, isLight) {
+    // Dynamic scale computation based on map height and zoom
+    // Lucknow bbox span ~0.22 deg lat ≈ 24.42 km
+    const pxPerKm = (state.map.height * state.map.zoom) / 24.42;
+    const bar5km = Math.max(40, Math.min(160, pxPerKm * 5.0));
+    const bar2_5km = bar5km / 2;
+
+    ctx.save();
+    // Background plate
+    ctx.fillStyle = isLight ? 'rgba(255, 255, 255, 0.9)' : 'rgba(11, 22, 44, 0.85)';
+    ctx.fillRect(x - 6, y - 16, bar5km + 12, 22);
+    ctx.strokeStyle = isLight ? '#CBD5E1' : '#1E3A8A';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 6, y - 16, bar5km + 12, 22);
+
+    // Scale line
+    ctx.strokeStyle = isLight ? '#0F172A' : '#94A3B8';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + bar5km, y);
+    // Ticks
+    ctx.moveTo(x, y - 4);
+    ctx.lineTo(x, y + 4);
+    ctx.moveTo(x + bar2_5km, y - 3);
+    ctx.lineTo(x + bar2_5km, y + 3);
+    ctx.moveTo(x + bar5km, y - 4);
+    ctx.lineTo(x + bar5km, y + 4);
+    ctx.stroke();
+
+    // Scale Labels
+    ctx.font = '600 8px Segoe UI, Roboto, Arial, sans-serif';
+    ctx.fillStyle = isLight ? '#475569' : '#94A3B8';
+    ctx.fillText('0', x - 2, y - 6);
+    ctx.fillText('2.5', x + bar2_5km - 6, y - 6);
+    ctx.fillText('5.0 km', x + bar5km - 10, y - 6);
+    ctx.restore();
+}
+
+// SCADA Map HUD
 function drawMapHUD(ctx, title, sub, isLight) {
-    ctx.fillStyle = isLight ? '#FFFFFF' : '#08132B';
-    ctx.fillRect(12, 12, 235, 44);
+    ctx.save();
+    ctx.fillStyle = isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(8, 19, 43, 0.92)';
+    ctx.fillRect(12, 12, 248, 46);
     ctx.strokeStyle = isLight ? '#BFDBFE' : '#1E3A8A';
     ctx.lineWidth = 1;
-    ctx.strokeRect(12, 12, 235, 44);
+    ctx.strokeRect(12, 12, 248, 46);
 
     // Left blue accent strip
     ctx.fillStyle = '#2563EB';
-    ctx.fillRect(12, 12, 4, 44);
+    ctx.fillRect(12, 12, 4, 46);
 
-    ctx.font = '700 10.5px Segoe UI, Roboto, Arial, sans-serif';
+    ctx.font = '700 11px Segoe UI, Roboto, Arial, sans-serif';
     ctx.fillStyle = isLight ? '#1D4ED8' : '#60A5FA';
-    ctx.fillText(title, 24, 29);
+    ctx.fillText(title, 24, 28);
 
+    const zoomTxt = `Zoom ${(state.map.zoom || 1.0).toFixed(1)}x`;
     ctx.font = '500 9.5px Segoe UI, Roboto, Arial, sans-serif';
     ctx.fillStyle = isLight ? '#4B5563' : '#94A3B8';
-    ctx.fillText(sub, 24, 44);
+    ctx.fillText(`${sub} • ${zoomTxt}`, 24, 45);
+    ctx.restore();
 }
+
+// Map Layer Toggle Handlers
+window.toggleMapLayer = function(layer) {
+    if (!state.mapLayers) {
+        state.mapLayers = { flow: true, facilities: true, roads: true };
+    }
+    state.mapLayers[layer] = !state.mapLayers[layer];
+    const btn = document.getElementById(`chip-layer-${layer}`);
+    if (btn) {
+        btn.classList.toggle('active', state.mapLayers[layer]);
+    }
+    sound.play('click');
+    const label = layer === 'flow' ? 'Power Flow' : (layer === 'facilities' ? 'Vital Sites' : 'Arterial Roads');
+    showToast(`${label} layer ${state.mapLayers[layer] ? 'enabled' : 'hidden'}`, 'info');
+    scheduleMapRender();
+};
+
+// Mobile Map Height Expand Toggle
+window.toggleMobileMapExpand = function() {
+    const mapEl = document.getElementById('lucknow-map');
+    if (!mapEl) return;
+    const isExpanded = mapEl.classList.toggle('map-expanded');
+    const btn = document.getElementById('btn-mob-map-expand');
+    if (btn) {
+        btn.classList.toggle('active', isExpanded);
+        btn.title = isExpanded ? 'Collapse Map' : 'Expand Map';
+    }
+    resizeCanvas();
+    renderGISMap();
+    sound.play('click');
+    showToast(isExpanded ? 'Tactical Map expanded (420px)' : 'Map restored to compact view (260px)', 'info');
+};
 
 // ==============================================================================
 // 4. DATA LOADING & STATE
@@ -2780,23 +3218,39 @@ window.openCrewAccountAndTerminal = function(crewId) {
 };
 
 // ==============================================================================
-// 9. CROSS-DEVICE NOTIFICATION CENTER ENGINE
+// 9. CROSS-DEVICE NOTIFICATION CENTER & EMERGENCY ENGINE
 // ==============================================================================
 window.toggleNotificationCenter = function(e) {
     if (e) e.stopPropagation();
     sound.play('click');
     const menu = document.getElementById('notification-center-menu');
     const trigger = document.getElementById('btn-notification-trigger');
+    const backdrop = document.getElementById('mobile-sheet-backdrop');
     if (!menu) return;
 
     closeProfileMenu();
     const willOpen = menu.classList.contains('hidden');
     if (willOpen) {
         menu.classList.remove('hidden');
+        if (window.innerWidth <= 768) {
+            menu.classList.add('bottom-sheet-mode');
+            if (backdrop) backdrop.classList.remove('hidden');
+        }
         if (trigger) trigger.setAttribute('aria-expanded', 'true');
+
+        // Opening the notification bell marks current notifications as viewed
+        state.notificationsViewed = true;
+        const badgeEl = document.getElementById('header-alert-count');
+        if (badgeEl) {
+            badgeEl.classList.add('hidden');
+            badgeEl.textContent = '0';
+        }
+
         renderNotificationCenter();
     } else {
         menu.classList.add('hidden');
+        menu.classList.remove('bottom-sheet-mode');
+        if (backdrop) backdrop.classList.add('hidden');
         if (trigger) trigger.setAttribute('aria-expanded', 'false');
     }
 };
@@ -2804,8 +3258,17 @@ window.toggleNotificationCenter = function(e) {
 window.closeNotificationCenter = function() {
     const menu = document.getElementById('notification-center-menu');
     const trigger = document.getElementById('btn-notification-trigger');
-    if (menu) menu.classList.add('hidden');
+    const backdrop = document.getElementById('mobile-sheet-backdrop');
+    if (menu) {
+        menu.classList.add('hidden');
+        menu.classList.remove('bottom-sheet-mode');
+    }
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    const profileMenu = document.getElementById('user-profile-menu');
+    const isProfileOpen = profileMenu && !profileMenu.classList.contains('hidden');
+    if (!isProfileOpen && backdrop) {
+        backdrop.classList.add('hidden');
+    }
 };
 
 window.refreshNotifications = function(e) {
@@ -2813,6 +3276,40 @@ window.refreshNotifications = function(e) {
     sound.play('click');
     renderNotificationCenter();
     showToast('Notifications refreshed', 'success');
+};
+
+// "✓ Mark All Read" Action
+window.markAllNotificationsAsRead = function(e) {
+    if (e) e.stopPropagation();
+    sound.play('click');
+
+    // Add all current incidents and notices to readNotificationIds
+    (state.incidents || []).forEach(inc => {
+        const idKey = inc.incident_code || String(inc.id);
+        state.readNotificationIds.add(idKey);
+    });
+    (state.randomScadaNotices || []).forEach(n => {
+        state.readNotificationIds.add(n.id);
+    });
+    state.readNotificationIds.add('crew-directive');
+    state.readNotificationIds.add('consumer-advisory');
+
+    // Persist read status in localStorage
+    try {
+        localStorage.setItem('voltera_read_notifs', JSON.stringify(Array.from(state.readNotificationIds)));
+    } catch(err) {}
+
+    state.notificationsViewed = true;
+
+    // Immediately clear indicator
+    const badgeEl = document.getElementById('header-alert-count');
+    if (badgeEl) {
+        badgeEl.classList.add('hidden');
+        badgeEl.textContent = '0';
+    }
+
+    renderNotificationCenter();
+    showToast('All notifications marked as read', 'success');
 };
 
 function renderNotificationCenter() {
@@ -2826,20 +3323,23 @@ function renderNotificationCenter() {
     const role = (user && user.role) ? user.role.toUpperCase() : 'CONSUMER';
 
     let notifItems = [];
-    let badgeCount = 0;
+    let unreadCount = 0;
 
     if (role === 'CREW') {
         const activeDisp = state.activeCrewDispatch;
         if (activeDisp && activeDisp.has_active_dispatch && activeDisp.incident) {
-            badgeCount = 1;
+            const key = `crew-${activeDisp.incident.incident_code || activeDisp.incident.id}`;
+            const isRead = state.readNotificationIds.has(key) || state.readNotificationIds.has('crew-directive');
+            if (!isRead) unreadCount++;
+
             const subName = activeDisp.transformer ? activeDisp.transformer.substation_name : 'Assigned Substation';
             const dist = activeDisp.route ? `${activeDisp.route.distance_km} km` : '1.4 km';
             const eta = activeDisp.route ? `${activeDisp.route.eta_minutes} min` : '10 min';
             notifItems.push(`
-                <div class="notif-card card-crit" onclick="switchView('view-crew-terminal'); closeNotificationCenter();">
+                <div class="notif-card card-crit ${isRead ? 'read' : ''}" onclick="switchView('view-crew-terminal'); closeNotificationCenter();">
                     <div class="notif-card-top">
                         <span class="notif-card-tag" style="color: var(--status-critical);">ACTIVE DIRECTIVE</span>
-                        <span class="notif-card-time">LIVE</span>
+                        ${isRead ? '<span class="notif-read-check">✓ READ</span>' : '<span class="notif-card-time">LIVE</span>'}
                     </div>
                     <div class="notif-card-title">${escapeHtml(activeDisp.incident.incident_code || 'INC-ORDER')} &mdash; ${escapeHtml(subName)}</div>
                     <div class="notif-card-desc">Transit Distance: ${dist} &bull; Estimated ETA: ${eta}. Turn-by-turn route ready.</div>
@@ -2847,10 +3347,10 @@ function renderNotificationCenter() {
             `);
         } else {
             notifItems.push(`
-                <div class="notif-card card-info" onclick="switchView('view-crew-terminal'); closeNotificationCenter();">
+                <div class="notif-card card-info read" onclick="switchView('view-crew-terminal'); closeNotificationCenter();">
                     <div class="notif-card-top">
                         <span class="notif-card-tag" style="color: var(--status-normal);">STATUS: STANDBY</span>
-                        <span class="notif-card-time">Active</span>
+                        <span class="notif-card-time">Ready</span>
                     </div>
                     <div class="notif-card-title">Squad Ready for Dispatch</div>
                     <div class="notif-card-desc">No active emergency work order assigned. Stationed at base depot on standby.</div>
@@ -2862,19 +3362,22 @@ function renderNotificationCenter() {
         }
     } else if (role === 'ADMIN' || role === 'OPERATOR') {
         const activeIncidents = (state.incidents || []).filter(i => i.status !== 'RESOLVED');
-        badgeCount = activeIncidents.length;
 
         if (activeIncidents.length > 0) {
-            activeIncidents.slice(0, 4).forEach(inc => {
+            activeIncidents.slice(0, 5).forEach(inc => {
+                const idKey = inc.incident_code || String(inc.id);
+                const isRead = state.readNotificationIds.has(idKey);
+                if (!isRead) unreadCount++;
+
                 const tf = (state.substations || []).find(t => t.id === inc.transformer_id);
                 const subName = tf ? tf.substation_name : `Substation #${inc.transformer_id}`;
                 const sev = Math.round(inc.severity_score || 0);
                 const isCrit = sev >= 70;
                 notifItems.push(`
-                    <div class="notif-card ${isCrit ? 'card-crit' : 'card-warn'}" onclick="switchView('view-incidents'); closeNotificationCenter();">
+                    <div class="notif-card ${isCrit ? 'card-crit' : 'card-warn'} ${isRead ? 'read' : ''}" onclick="switchView('view-incidents'); closeNotificationCenter();">
                         <div class="notif-card-top">
                             <span class="notif-card-tag" style="color: ${isCrit ? 'var(--status-critical)' : 'var(--status-warning)'};">${isCrit ? 'CRITICAL OUTAGE' : 'GRID ALERT'}</span>
-                            <span class="notif-card-time">Score ${sev}/100</span>
+                            ${isRead ? '<span class="notif-read-check">✓ READ</span>' : `<span class="notif-card-time">Sev ${sev}/100</span>`}
                         </div>
                         <div class="notif-card-title">${escapeHtml(inc.incident_code || 'ALERT')} &bull; ${escapeHtml(subName)}</div>
                         <div class="notif-card-desc">${escapeHtml(inc.root_cause_prediction || 'Feeder Trip')} &bull; Status: ${escapeHtml(inc.status)}</div>
@@ -2883,16 +3386,33 @@ function renderNotificationCenter() {
             });
         }
 
+        // Live Random SCADA Telemetry Alerts
+        (state.randomScadaNotices || []).slice(0, 3).forEach(notice => {
+            const isRead = state.readNotificationIds.has(notice.id);
+            if (!isRead) unreadCount++;
+
+            notifItems.push(`
+                <div class="notif-card ${notice.level === 'warn' ? 'card-warn' : 'card-info'} ${isRead ? 'read' : ''}">
+                    <div class="notif-card-top">
+                        <span class="notif-card-tag" style="color: ${notice.level === 'warn' ? 'var(--status-warning)' : 'var(--accent)'};">${escapeHtml(notice.tag)}</span>
+                        ${isRead ? '<span class="notif-read-check">✓ READ</span>' : `<span class="notif-card-time">${escapeHtml(notice.time)}</span>`}
+                    </div>
+                    <div class="notif-card-title">${escapeHtml(notice.title)}</div>
+                    <div class="notif-card-desc">${escapeHtml(notice.text)}</div>
+                </div>
+            `);
+        });
+
         const deployedCrews = (state.crews || []).filter(c => c.status !== 'AVAILABLE');
         if (deployedCrews.length > 0) {
             notifItems.push(`
-                <div class="notif-card card-info" onclick="switchView('view-fleet'); closeNotificationCenter();">
+                <div class="notif-card card-info read" onclick="switchView('view-fleet'); closeNotificationCenter();">
                     <div class="notif-card-top">
                         <span class="notif-card-tag" style="color: var(--accent);">FIELD RESPONSE FLEET</span>
-                        <span class="notif-card-time">${deployedCrews.length} Units</span>
+                        <span class="notif-card-time">${deployedCrews.length} Active</span>
                     </div>
-                    <div class="notif-card-title">${deployedCrews.length} Field Squads Currently Active</div>
-                    <div class="notif-card-desc">Field repair units actively deployed across Lucknow districts.</div>
+                    <div class="notif-card-title">${deployedCrews.length} Field Line Gangs Deployed</div>
+                    <div class="notif-card-desc">Active repair units stationed across Lucknow electrical districts.</div>
                 </div>
             `);
         }
@@ -2906,18 +3426,20 @@ function renderNotificationCenter() {
         }
     } else {
         // Consumer / Guest
-        badgeCount = 1;
+        const isAdvRead = state.readNotificationIds.has('consumer-advisory');
+        if (!isAdvRead) unreadCount++;
+
         const activeCount = (state.incidents || []).filter(i => i.status !== 'RESOLVED').length;
         notifItems.push(`
-            <div class="notif-card card-info" onclick="switchView('view-citizen'); closeNotificationCenter();">
+            <div class="notif-card card-info ${isAdvRead ? 'read' : ''}" onclick="switchView('view-citizen'); closeNotificationCenter();">
                 <div class="notif-card-top">
                     <span class="notif-card-tag" style="color: var(--status-normal);">PUBLIC GRID ADVISORY</span>
-                    <span class="notif-card-time">LIVE</span>
+                    ${isAdvRead ? '<span class="notif-read-check">✓ READ</span>' : '<span class="notif-card-time">LIVE</span>'}
                 </div>
                 <div class="notif-card-title">Lucknow Central Supply Network</div>
                 <div class="notif-card-desc">${activeCount > 0 ? `${activeCount} localized outage(s) currently being restored by field squads.` : 'All major feeder circuits in Lucknow operating normally.'}</div>
             </div>
-            <div class="notif-card card-info" onclick="switchView('view-citizen'); closeNotificationCenter();">
+            <div class="notif-card card-info read" onclick="switchView('view-citizen'); closeNotificationCenter();">
                 <div class="notif-card-top">
                     <span class="notif-card-tag" style="color: #34D399;">CITIZEN DESK</span>
                     <span class="notif-card-time">24/7 Helpline</span>
@@ -2932,13 +3454,25 @@ function renderNotificationCenter() {
     }
 
     listEl.innerHTML = notifItems.join('');
+
+    // Notification Indicator Badge logic:
+    // If user has viewed notifications, indicator remains hidden until NEW alerts arrive
     if (badgeEl) {
-        badgeEl.textContent = String(badgeCount);
-        if (badgeCount > 0) badgeEl.classList.remove('hidden');
-        else badgeEl.classList.add('hidden');
+        if (!state.notificationsViewed && unreadCount > 0) {
+            badgeEl.textContent = String(unreadCount);
+            badgeEl.classList.remove('hidden');
+        } else {
+            badgeEl.textContent = '0';
+            badgeEl.classList.add('hidden');
+        }
     }
+
     if (summaryEl) {
-        summaryEl.textContent = `${badgeCount} active item${badgeCount === 1 ? '' : 's'}`;
+        if (unreadCount > 0) {
+            summaryEl.textContent = `${unreadCount} unread alert${unreadCount === 1 ? '' : 's'}`;
+        } else {
+            summaryEl.textContent = 'All caught up • 0 unread';
+        }
     }
 }
 
@@ -2961,6 +3495,191 @@ function setupNotificationCenter() {
         }
     });
 }
+
+// ==============================================================================
+// 9b. EMERGENCY FAULT SIMULATION & RANDOM SCADA ALERTS
+// ==============================================================================
+window.triggerRandomEmergency = async function(e) {
+    if (e) e.stopPropagation();
+    const btn = document.getElementById('btn-trigger-emergency');
+    const origHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="pulse-warning-dot"></span><span>⚡ Simulating Outage...</span>`;
+    }
+    sound.play('click');
+
+    try {
+        const res = await fetch('/api/emergency/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showToast(data.message || 'Emergency simulation failed. Operators or Admins only.', 'error');
+            return;
+        }
+
+        // Play loud alert tone
+        sound.play('alert');
+        state.notificationsViewed = false; // Reset viewed flag so notification bell lights up!
+
+        const tf = data.transformer;
+        const inc = data.incident;
+        const cause = inc.root_cause_prediction || 'Feeder Trip';
+        const subName = tf ? tf.substation_name : 'Substation';
+        const sev = Math.round(inc.severity_score || 90);
+
+        showToast(`🚨 CRITICAL EMERGENCY: ${subName} (${cause})! Severity ${sev}/100. Field Squad Alert dispatched!`, 'error');
+
+        // Reload data to reflect new incident, transformer status, and fleet updates
+        await loadAllData(false);
+
+        // Center and zoom map to faulted substation
+        if (tf && tf.latitude && tf.longitude) {
+            state.map.panX = 0;
+            state.map.panY = 0;
+            state.map.zoom = 1.35;
+            const fullTf = state.substations.find(s => s.id === tf.id);
+            state.map.hoveredSubstation = fullTf || tf;
+            scheduleMapRender();
+        }
+
+        // Notification badge pops up
+        const badgeEl = document.getElementById('header-alert-count');
+        if (badgeEl) {
+            badgeEl.classList.remove('hidden');
+        }
+
+    } catch (err) {
+        showToast('Error connecting to emergency simulation service', 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+        }
+    }
+};
+
+const RANDOM_SCADA_EVENT_TEMPLATES = [
+    { title: 'Feeder F-4 Inrush Spike', text: 'Transient inrush current (+28%) normalized by auto-recloser', zone: 'Hazratganj', tag: 'SCADA TELEMETRY', level: 'warn' },
+    { title: 'Substation Core Temp', text: 'Ambient oil temperature at 44°C within thermal safety margin', zone: 'Aliganj', tag: 'THERMAL SENSOR', level: 'info' },
+    { title: 'Line Gang Delta-04 En Route', text: 'Scheduled insulator inspection underway on 33kV corridor', zone: 'Gomti Nagar', tag: 'FLEET DISPATCH', level: 'info' },
+    { title: 'Bus Voltage Fluctuated to 244V', text: 'On-load tap changer stabilized primary bus to nominal 230V', zone: 'Chowk', tag: 'TAP CHANGER', level: 'warn' },
+    { title: 'Hospital Feeder Backup Online', text: 'Dual-circuit auto-throwover verified secure at SGPGI', zone: 'Amausi & SGPGI', tag: 'VITAL INFRA', level: 'normal' },
+    { title: 'Solar Feed Influx Surge', text: 'Rooftop solar microgrid injection +8.4 MW detected into Alambagh ring', zone: 'Alambagh', tag: 'RENEWABLE INFLOW', level: 'info' },
+    { title: 'Underground Cable Insulation Check', text: 'Megger dielectric test passed on 11kV Gomti crossing', zone: 'Hazratganj', tag: 'DIAGNOSTICS', level: 'normal' }
+];
+
+function startRandomSCADAAlerts() {
+    setInterval(() => {
+        if (document.hidden || !state.user) return;
+        const tmpl = RANDOM_SCADA_EVENT_TEMPLATES[Math.floor(Math.random() * RANDOM_SCADA_EVENT_TEMPLATES.length)];
+        const noticeId = `scada-${Date.now()}`;
+        const newNotice = {
+            id: noticeId,
+            title: tmpl.title,
+            text: `${tmpl.text} (${tmpl.zone})`,
+            tag: tmpl.tag,
+            level: tmpl.level,
+            time: 'Just now',
+            timestamp: Date.now()
+        };
+        state.randomScadaNotices.unshift(newNotice);
+        if (state.randomScadaNotices.length > 8) state.randomScadaNotices.pop();
+
+        // Increment unread unless notifications are actively open
+        const notifMenu = document.getElementById('notification-center-menu');
+        const isNotifOpen = notifMenu && !notifMenu.classList.contains('hidden');
+        if (!isNotifOpen) {
+            state.notificationsViewed = false;
+        }
+
+        renderNotificationCenter();
+    }, 42000);
+}
+
+function setupSSEListener() {
+    if (!window.EventSource) return;
+    try {
+        const evtSource = new EventSource('/api/stream/events');
+        evtSource.onmessage = function(e) {
+            try {
+                const data = JSON.parse(e.data);
+                if (data.event === 'emergency_simulated') {
+                    state.notificationsViewed = false;
+                    sound.play('alert');
+                    showToast(`⚡ GRID EMERGENCY ALERT: ${data.substation_name || 'Substation'} (${data.cause || 'Fault'})`, 'error');
+                    loadAllData(true);
+                }
+            } catch(err) {}
+        };
+    } catch(e) {}
+}
+
+// ==============================================================================
+// 9c. MOBILE SEARCH & BOTTOM SHEET CONTROLLERS
+// ==============================================================================
+window.toggleMobileSearch = function(e) {
+    if (e) e.stopPropagation();
+    sound.play('click');
+    const bar = document.getElementById('mobile-search-bar');
+    const input = document.getElementById('mobile-search-input');
+    if (!bar) return;
+    const isHidden = bar.classList.contains('hidden');
+    if (isHidden) {
+        bar.classList.remove('hidden');
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    } else {
+        bar.classList.add('hidden');
+    }
+};
+
+window.clearMobileSearch = function() {
+    const input = document.getElementById('mobile-search-input');
+    if (input) input.value = '';
+    state.searchQuery = '';
+    const globalInput = document.getElementById('global-search');
+    if (globalInput) globalInput.value = '';
+    renderSubstations();
+    renderOverviewTelemetry();
+    renderIncidents();
+    renderGISMap();
+    sound.play('click');
+};
+
+function setupMobileSearch() {
+    const input = document.getElementById('mobile-search-input');
+    if (!input) return;
+    input.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        state.searchQuery = query;
+        const globalInput = document.getElementById('global-search');
+        if (globalInput) globalInput.value = e.target.value;
+        renderSubstations();
+        renderOverviewTelemetry();
+        renderIncidents();
+        scheduleMapRender();
+    });
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const bar = document.getElementById('mobile-search-bar');
+            if (bar) bar.classList.add('hidden');
+        }
+    });
+}
+
+window.closeAllMobileSheets = function() {
+    closeNotificationCenter();
+    closeProfileMenu();
+    const searchBar = document.getElementById('mobile-search-bar');
+    if (searchBar) searchBar.classList.add('hidden');
+    const backdrop = document.getElementById('mobile-sheet-backdrop');
+    if (backdrop) backdrop.classList.add('hidden');
+};
 
 async function checkActiveCrewAlerts() {
     try {

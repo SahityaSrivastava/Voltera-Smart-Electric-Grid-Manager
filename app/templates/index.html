@@ -31,7 +31,10 @@
                     <div class="login-card-brand">
                         <img src="{{ url_for('static', filename='img/voltera_logo.svg') }}?v={{ cache_buster }}" alt="Voltera Logo" class="new-login-logo">
                         <div class="login-brand-meta">
-                            <h1 class="login-brand-title">Voltera</h1>
+                            <div class="brand-title-row">
+                                <h1 class="login-brand-title">Voltera</h1>
+                                <span class="footer-version-tag header-version-tag">Version 1.0.2</span>
+                            </div>
                             <span class="login-brand-subtitle">Power Grid Operations</span>
                         </div>
                     </div>
@@ -113,7 +116,10 @@
                 <a href="#" class="brand-link" onclick="switchView('view-overview'); return false;" title="Voltera Home">
                     <img src="{{ url_for('static', filename='img/voltera_logo.svg') }}?v={{ cache_buster }}" alt="Voltera Logo" class="brand-logo-nav">
                     <div class="brand-text-group">
-                        <span class="brand-title">Voltera</span>
+                        <div class="brand-title-row">
+                            <span class="brand-title">Voltera</span>
+                            <span class="footer-version-tag header-version-tag">Version 1.0.2</span>
+                        </div>
                         <span class="brand-dept">Grid Operations</span>
                     </div>
                 </a>
@@ -148,6 +154,14 @@
                     <kbd class="kbd-hint">/</kbd>
                 </div>
 
+                <!-- Mobile Instant Search Trigger Button -->
+                <button type="button" class="mobile-search-toggle-btn" id="btn-mob-search-toggle" onclick="toggleMobileSearch(event)" aria-label="Search Grid" title="Search Grid">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+
                 <!-- Cross-Device Alert / Notification Center -->
                 <div class="notification-wrapper">
                     <button type="button" class="notification-trigger-btn" id="btn-notification-trigger" onclick="toggleNotificationCenter(event)" aria-haspopup="true" aria-expanded="false" title="Cross-Device Alerts &amp; Notifications">
@@ -173,7 +187,10 @@
                         </div>
                         <div class="notif-sub-bar">
                             <span id="notif-summary-text">Active notifications</span>
-                            <button type="button" class="btn-notif-action" onclick="refreshNotifications(event)">Refresh</button>
+                            <div class="notif-actions-group">
+                                <button type="button" class="btn-notif-action btn-notif-read-all" id="btn-notif-mark-read" onclick="markAllNotificationsAsRead(event)" title="Mark all alerts as read">✓ Mark All Read</button>
+                                <button type="button" class="btn-notif-action" onclick="refreshNotifications(event)">Refresh</button>
+                            </div>
                         </div>
                         <div id="notif-items-list" class="notif-items-list">
                             <div class="notif-empty">Checking real-time alerts...</div>
@@ -255,11 +272,29 @@
 
                         <div class="dropdown-footer">
                             <button type="button" class="btn btn-secondary btn-sm btn-full" id="btn-logout">Sign Out</button>
+                            <div class="dropdown-version-row">Voltera Grid Operations &bull; Version 1.0.2</div>
                         </div>
                     </div>
                 </div>
             </div>
         </header>
+
+        <!-- Mobile Slide-Down Search Bar -->
+        <div id="mobile-search-bar" class="mobile-search-bar-wrap hidden">
+            <div class="mobile-search-input-box">
+                <span class="mob-search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="text" id="mobile-search-input" placeholder="Search substations, faults, crews..." autocomplete="off">
+                <button type="button" class="btn-clear-mob-search" id="btn-clear-mob-search" onclick="clearMobileSearch()" title="Clear search">&times;</button>
+            </div>
+        </div>
+
+        <!-- Mobile Sheet & Dropdown Backdrop -->
+        <div id="mobile-sheet-backdrop" class="mobile-sheet-backdrop hidden" onclick="closeAllMobileSheets()"></div>
 
         <!-- Cross-Device Persistent Dispatch Alert Banner (Account-Based) -->
         <div id="crew-dispatch-top-alert" class="crew-top-alert-banner hidden">
@@ -301,6 +336,13 @@
                         <input type="text" id="quick-track-input" placeholder="Quick Search: Outage Docket or Substation..." autocomplete="off">
                         <button type="button" class="btn btn-primary btn-sm" id="btn-quick-track">Track</button>
                         <span class="quick-ops-kbd"><kbd>/</kbd></span>
+                    </div>
+                    <!-- Emergency Outage Simulation Trigger Button -->
+                    <div class="quick-ops-actions">
+                        <button type="button" class="btn btn-emergency-pulse" id="btn-trigger-emergency" onclick="triggerRandomEmergency(event)" title="Simulate a live grid emergency outage fault with automatic crew dispatch recommendations">
+                            <span class="pulse-warning-dot"></span>
+                            <span>⚡ Trigger Emergency Fault</span>
+                        </button>
                     </div>
                     <div class="quick-ops-live-tags">
                         <span class="pill-chip chip-blue" title="Monitored Feeders"><span class="chip-dot"></span> 18 Substations</span>
@@ -430,9 +472,26 @@
                                 <canvas id="gis-canvas"></canvas>
                                 <!-- Map Overlay Controls -->
                                 <div class="map-controls">
+                                    <button type="button" class="map-btn mob-map-expand-btn" id="btn-mob-map-expand" onclick="toggleMobileMapExpand()" title="Expand or Shrink Map" aria-label="Expand Map">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <polyline points="15 3 21 3 21 9"></polyline>
+                                            <polyline points="9 21 3 21 3 15"></polyline>
+                                            <line x1="21" y1="3" x2="14" y2="10"></line>
+                                            <line x1="3" y1="21" x2="10" y2="14"></line>
+                                        </svg>
+                                    </button>
                                     <button type="button" class="map-btn" id="map-zoom-in" title="Zoom in">+</button>
                                     <button type="button" class="map-btn" id="map-zoom-out" title="Zoom out">&minus;</button>
                                     <button type="button" class="map-btn map-btn-text" id="map-reset" title="Reset view">Center</button>
+                                </div>
+                                <!-- Layer Toggles Ribbon -->
+                                <div class="map-layer-ribbon">
+                                    <button type="button" class="map-chip-btn active" id="chip-layer-flow" onclick="toggleMapLayer('flow')">⚡ Power Flow</button>
+                                    <button type="button" class="map-chip-btn active" id="chip-layer-facilities" onclick="toggleMapLayer('facilities')">🏥 Vital Sites</button>
+                                    <button type="button" class="map-chip-btn active" id="chip-layer-roads" onclick="toggleMapLayer('roads')">🛣️ Arterial Roads</button>
+                                </div>
+                                <div id="mob-map-gesture-hint" class="mobile-map-gesture-hint">
+                                    <span>👆 1-finger pan &bull; Pinch to zoom</span>
                                 </div>
                                 <!-- Solid Map Legend with Info Tip -->
                                 <div class="map-legend">
